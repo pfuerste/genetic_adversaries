@@ -4,14 +4,18 @@ from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 import numpy as np
 from tqdm import tqdm
+import random
+from shutil import copyfile
 
 DATA_PATH = "./data/"
+DUMMY_PATH = "./dummydata/"
 
 
 # Input: Folder Path
 # Output: Tuple (Label, Indices of the labels, one-hot encoded labels)
 def get_labels(path=DATA_PATH):
-    labels = os.listdir(path)
+    # labels = os.listdir(path)
+    labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
     label_indices = np.arange(0, len(labels))
     return labels, label_indices, to_categorical(label_indices)
 
@@ -99,4 +103,21 @@ def load_dataset(path=DATA_PATH):
 
     return dataset[:100]
 
-#print(len(get_labels(DATA_PATH)[0]))
+
+# Copies dir_size wva-files per class to a dummy-data-folder for testing purposes
+def make_dummy_folder(path=DATA_PATH, dummypath=DUMMY_PATH, dir_size=1):
+    labels = get_labels(path)[0]
+    for label in labels:
+        old_dir = os.path.join(path, label)
+        new_dir = os.path.join(dummypath, label)
+        try:
+            os.mkdir(new_dir)
+        except FileExistsError:
+            pass
+        for dummies in range(dir_size):
+            file = random.choice([x for x in os.listdir(old_dir) if os.path.isfile(os.path.join(old_dir, x))])
+            copyfile(os.path.join(old_dir, file), os.path.join(new_dir, file))
+
+
+
+
