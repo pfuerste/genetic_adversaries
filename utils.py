@@ -56,7 +56,7 @@ def save_data_to_array(path=DATA_PATH, max_len=11):
             os.mkdir(os.path.join(path,'mfcc_vectors'))
         except FileExistsError:
             pass
-        np.save(os.path.join(path, 'mfcc_vectors', label, '.npy'), mfcc_vectors)
+        np.save(os.path.join(path, 'mfcc_vectors', label+'.npy'), mfcc_vectors)
         print('Converted and saved all wavs in {}'.format(label))
 
 
