@@ -48,28 +48,29 @@ def save_data_to_array(path=DATA_PATH, max_len=11):
         # Init mfcc vectors
         mfcc_vectors = []
 
-        wavfiles = [os.path.join(path, label, wavfile) for wavfile in os.listdir(path + '/' + label)]
+        wavfiles = [os.path.join(path, label, wavfile) for wavfile in os.listdir(os.path.join(path, label))]
         for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
             mfcc = wav2mfcc(wavfile, max_len=max_len)
             mfcc_vectors.append(mfcc)
         try:
-            os.mkdir(path+'mfcc_vectors')
+            os.mkdir(os.path.join(path,'mfcc_vectors'))
         except FileExistsError:
             pass
-        np.save(path + 'mfcc_vectors/' + label + '.npy', mfcc_vectors)
+        np.save(os.path.join(path, 'mfcc_vectors', label, '.npy'), mfcc_vectors)
         print('Converted and saved all wavs in {}'.format(label))
+
 
 def get_train_test(split_ratio=0.6, random_state=42):
     # Get available labels
     labels, indices, _ = get_labels(DATA_PATH)
 
     # Getting first arrays
-    X = np.load(labels[0] + '.npy')
+    X = np.load(os.path.join(labels[0], '.npy'))
     y = np.zeros(X.shape[0])
 
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
-        x = np.load(label + '.npy')
+        x = np.load(os.path.join(label, '.npy'))
         X = np.vstack((X, x))
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 
