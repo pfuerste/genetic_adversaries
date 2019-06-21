@@ -115,7 +115,7 @@ def load_dataset(path=DATA_PATH):
 
 
 # Copies dir_size wva-files per class to a dummy-data-folder for testing purposes
-def make_dummy_folder(path=DATA_PATH, dummypath=DUMMY_PATH, dir_size=1):
+def make_dummy_dir(path=DATA_PATH, dummypath=DUMMY_PATH, dir_size=1):
     labels = get_labels(path)[0]
     for label in labels:
         old_dir = os.path.join(path, label)
