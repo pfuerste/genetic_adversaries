@@ -48,7 +48,7 @@ def save_data_to_array(path=DATA_PATH, max_len=11):
         # Init mfcc vectors
         mfcc_vectors = []
 
-        wavfiles = [path + label + '/' + wavfile for wavfile in os.listdir(path + '/' + label)]
+        wavfiles = [os.path.join(path, label, wavfile) for wavfile in os.listdir(path + '/' + label)]
         for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
             mfcc = wav2mfcc(wavfile, max_len=max_len)
             mfcc_vectors.append(mfcc)
