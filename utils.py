@@ -6,6 +6,8 @@ import numpy as np
 from tqdm import tqdm
 import random
 from shutil import copyfile
+import matplotlib.pyplot as plt
+import librosa.display
 
 DATA_PATH = "./data/"
 DUMMY_PATH = "./dummydata/"
@@ -38,6 +40,7 @@ def wav2mfcc(file_path, max_len=11):
     return mfcc
 
 
+# saves wavs in a folder in numpy-array, one for each label sub-folder
 def save_data_to_array(path=DATA_PATH, max_len=11):
     labels, _, _ = get_labels(path)
 
@@ -49,8 +52,12 @@ def save_data_to_array(path=DATA_PATH, max_len=11):
         for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
             mfcc = wav2mfcc(wavfile, max_len=max_len)
             mfcc_vectors.append(mfcc)
-        np.save(label + '.npy', mfcc_vectors)
-
+        try:
+            os.mkdir(path+'mfcc_vectors')
+        except FileExistsError:
+            pass
+        np.save(path + 'mfcc_vectors/' + label + '.npy', mfcc_vectors)
+        print('Converted and saved all wavs in {}'.format(label))
 
 def get_train_test(split_ratio=0.6, random_state=42):
     # Get available labels
@@ -71,6 +78,7 @@ def get_train_test(split_ratio=0.6, random_state=42):
     return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=True)
 
 
+# returns a dictionary of format dic['label'][['path']['mfcc']]
 def prepare_dataset(path=DATA_PATH):
     labels, _, _ = get_labels(path)
     data = {}
@@ -83,7 +91,7 @@ def prepare_dataset(path=DATA_PATH):
         for wavfile in data[label]['path']:
             wave, sr = librosa.load(wavfile, mono=True, sr=None)
             # Downsampling
-            wave = wave[::3]
+            # wave = wave[::3]
             mfcc = librosa.feature.mfcc(wave, sr=16000)
             vectors.append(mfcc)
 
@@ -92,6 +100,7 @@ def prepare_dataset(path=DATA_PATH):
     return data
 
 
+# returns the first 100 mfccs per label in a list[[label][mfcc]]
 def load_dataset(path=DATA_PATH):
     data = prepare_dataset(path)
 
@@ -118,6 +127,16 @@ def make_dummy_folder(path=DATA_PATH, dummypath=DUMMY_PATH, dir_size=1):
             file = random.choice([x for x in os.listdir(old_dir) if os.path.isfile(os.path.join(old_dir, x))])
             copyfile(os.path.join(old_dir, file), os.path.join(new_dir, file))
 
+
+# display an array containing the mfcc
+def visualize_mfcc(array):
+    mfcc = array
+    plt.figure()
+    librosa.display.specshow(mfcc, x_axis='time')
+    plt.colorbar()
+    plt.title('MFCC')
+    plt.tight_layout()
+    plt.show()
 
 
 
