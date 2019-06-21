@@ -18,6 +18,7 @@ DUMMY_PATH = "./dummydata/"
 def get_labels(path=DATA_PATH):
     # labels = os.listdir(path)
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+    labels.remove('mfcc_vectors')
     label_indices = np.arange(0, len(labels))
     return labels, label_indices, to_categorical(label_indices)
 
