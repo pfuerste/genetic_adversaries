@@ -3,9 +3,6 @@ import os
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 import numpy as np
-from tqdm import tqdm
-import random
-from shutil import copyfile
 import matplotlib.pyplot as plt
 import librosa.display
 
@@ -20,6 +17,10 @@ def get_labels(path=DATA_PATH):
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
     if 'mfcc_vectors' in labels:
         labels.remove('mfcc_vectors')
+    if 'spec_vectors' in labels:
+        labels.remove('spec_vectors')
+    if '_background_noise_' in labels:
+        labels.remove('_background_noise_')
     label_indices = np.arange(0, len(labels))
     return labels, label_indices, to_categorical(label_indices)
 
@@ -42,24 +43,13 @@ def wav2mfcc(file_path, max_len=11):
     return mfcc
 
 
-# saves wavs in a folder in numpy-array, one for each label sub-folder
-def save_data_to_array(path=DATA_PATH, max_len=11):
-    labels, _, _ = get_labels(path)
-
-    for label in labels:
-        # Init mfcc vectors
-        mfcc_vectors = []
-
-        wavfiles = [os.path.join(path, label, wavfile) for wavfile in os.listdir(os.path.join(path, label))]
-        for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
-            mfcc = wav2mfcc(wavfile, max_len=max_len)
-            mfcc_vectors.append(mfcc)
-        try:
-            os.mkdir(os.path.join(path,'mfcc_vectors'))
-        except FileExistsError:
-            pass
-        np.save(os.path.join(path, 'mfcc_vectors', label+'.npy'), mfcc_vectors)
-        print('Converted and saved all wavs in {}'.format(label))
+def wav2spec(file_path, downsample=False):
+    wave, sr = librosa.load(file_path, mono=True, sr=None)
+    if downsample:
+        wave = wave[::3]
+    # Why abs?
+    spec = np.abs(librosa.stft(wave))
+    return spec
 
 
 def get_train_test(split_ratio=0.6, random_state=42):
@@ -116,21 +106,6 @@ def load_dataset(path=DATA_PATH):
     return dataset[:100]
 
 
-# Copies dir_size wva-files per class to a dummy-data-folder for testing purposes
-def make_dummy_dir(path=DATA_PATH, dummypath=DUMMY_PATH, dir_size=1):
-    labels = get_labels(path)[0]
-    for label in labels:
-        old_dir = os.path.join(path, label)
-        new_dir = os.path.join(dummypath, label)
-        try:
-            os.mkdir(new_dir)
-        except FileExistsError:
-            pass
-        for dummies in range(dir_size):
-            file = random.choice([x for x in os.listdir(old_dir) if os.path.isfile(os.path.join(old_dir, x))])
-            copyfile(os.path.join(old_dir, file), os.path.join(new_dir, file))
-
-
 # display an array containing the mfcc
 def visualize_mfcc(array):
     mfcc = array
@@ -142,4 +117,37 @@ def visualize_mfcc(array):
     plt.show()
 
 
+
+
+'''
+file = random.choice([x for x in os.listdir(os.path.join(DATA_PATH, 'no'))
+                      if os.path.isfile(os.path.join(DATA_PATH, 'no', x)) and
+                      os.path.getsize(os.path.join(DATA_PATH, 'no', x)) == 32044])
+file = os.path.join(DATA_PATH, 'no', file)
+wav, sr = librosa.load(file)
+D = np.abs(librosa.stft(wav))
+print(np.shape(D))
+librosa.display.specshow(librosa.amplitude_to_db(D, ref=np.max), y_axis='log', x_axis='time')
+plt.title('Power spectrogram')
+plt.colorbar(format='%+2.0f dB')
+plt.tight_layout()
+plt.show()
+
+
+file = random.choice([x for x in os.listdir(os.path.join(DATA_PATH, 'no'))
+                      if os.path.isfile(os.path.join(os.path.join(DATA_PATH, 'no'), x))])
+path = os.path.join(DATA_PATH, 'no', file)
+wave, sr = librosa.load(path, mono=True, sr=None)
+#wave = wave[::3]
+#import matplotlib.pyplot as plt
+#import librosa.display
+plt.figure(figsize=(15, 10))
+#D = librosa.amplitude_to_db(librosa.stft(wave), ref=np.max)
+#plt.subplot(4, 2, 1)
+#librosa.display.specshow(D, y_axis='linear')
+plt.subplot(3, 1, 1)
+librosa.display.waveplot(wave, sr)
+#plt.colorbar(format='%+2.0f dB')
+plt.show()
+'''
 
