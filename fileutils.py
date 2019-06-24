@@ -80,6 +80,6 @@ def save_data_to_array(path=DATA_PATH, output_format='spec', input_size=32044, m
 
 
 #make_dummy_dir(dir_size=3)
-check_file_sizes(DUMMY_PATH)
+#check_file_sizes(DUMMY_PATH)
 #save_data_to_array(path=DUMMY_PATH)
 # Func to prune different filesizes (and save spectogramms?)
