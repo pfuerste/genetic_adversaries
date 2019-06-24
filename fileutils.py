@@ -78,6 +78,7 @@ def save_data_to_array(path=DATA_PATH, output_format='spec', input_size=32044, m
         np.save(os.path.join(path, output_format+'_vectors', label+'.npy'), out_vectors)
 
 
+
 #make_dummy_dir(dir_size=3)
 check_file_sizes(DUMMY_PATH)
 #save_data_to_array(path=DUMMY_PATH)

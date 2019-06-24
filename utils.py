@@ -5,6 +5,7 @@ from keras.utils import to_categorical
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa.display
+import random
 
 DATA_PATH = "./data/"
 DUMMY_PATH = "./dummydata/"
@@ -32,7 +33,7 @@ def wav2mfcc(file_path, max_len=11):
     mfcc = librosa.feature.mfcc(wave, sr=16000)
 
     # If maximum length exceeds mfcc lengths then pad the remaining ones
-    if (max_len > mfcc.shape[1]):
+    if max_len > mfcc.shape[1]:
         pad_width = max_len - mfcc.shape[1]
         mfcc = np.pad(mfcc, pad_width=((0, 0), (0, pad_width)), mode='constant')
 
@@ -43,7 +44,7 @@ def wav2mfcc(file_path, max_len=11):
     return mfcc
 
 
-def wav2spec(file_path, downsample=False):
+def wav2spec(file_path, downsample=True):
     wave, sr = librosa.load(file_path, mono=True, sr=None)
     if downsample:
         wave = wave[::3]
@@ -117,14 +118,14 @@ def visualize_mfcc(array):
     plt.show()
 
 
-
-
 '''
 file = random.choice([x for x in os.listdir(os.path.join(DATA_PATH, 'no'))
                       if os.path.isfile(os.path.join(DATA_PATH, 'no', x)) and
                       os.path.getsize(os.path.join(DATA_PATH, 'no', x)) == 32044])
 file = os.path.join(DATA_PATH, 'no', file)
-wav, sr = librosa.load(file)
+wav, sr = librosa.load(file, mono=True)
+print(np.shape(wav))
+#D = librosa.amplitude_to_db(np.abs(wav2spec(file)))
 D = np.abs(librosa.stft(wav))
 print(np.shape(D))
 librosa.display.specshow(librosa.amplitude_to_db(D, ref=np.max), y_axis='log', x_axis='time')
@@ -132,6 +133,8 @@ plt.title('Power spectrogram')
 plt.colorbar(format='%+2.0f dB')
 plt.tight_layout()
 plt.show()
+
+
 
 
 file = random.choice([x for x in os.listdir(os.path.join(DATA_PATH, 'no'))
