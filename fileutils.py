@@ -1,9 +1,8 @@
 import os
-from utils import get_labels
+from genetic_adversaries.utils import get_labels, wav2mfcc, wav2spec
 import random
 from shutil import copyfile
 import numpy as np
-from utils import wav2mfcc, wav2spec
 from tqdm import tqdm
 
 DATA_PATH = "./data/"
