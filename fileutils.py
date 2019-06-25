@@ -54,7 +54,7 @@ def check_file_sizes(path=DATA_PATH, check_size='32044', recursive=True):
 
 
 # saves wavs in a folder in numpy-array, one for each label sub-folder
-def save_data_to_array(path=DATA_PATH, output_format='spec', input_size=32044, max_len=11):
+def save_data_to_array(output_format, path=DATA_PATH, input_size=32044, max_len=98, Transpose = True):
     labels, _, _ = get_labels(path)
 
     for label in labels:
@@ -70,16 +70,35 @@ def save_data_to_array(path=DATA_PATH, output_format='spec', input_size=32044, m
         elif output_format is 'mfcc':
             for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
                 mfcc = wav2mfcc(wavfile, max_len=max_len)
-                out_vectors.append(mfcc)
+                if Transpose:
+                    out_vectors.append(mfcc.T)
+                else:
+                    out_vectors.append(mfcc)
         try:
-            os.mkdir(os.path.join(path, output_format+'_vectors'))
+            os.mkdir(os.path.join(path, output_format+'_vectors_big'))
         except FileExistsError:
             pass
-        np.save(os.path.join(path, output_format+'_vectors', label+'.npy'), out_vectors)
+        np.save(os.path.join(path, output_format+'_vectors_big', label+'.npy'), out_vectors)
 
 
+def pick_random_sample(path=DATA_PATH, input_size=32044):
+    labels = get_labels(path)[0]
+    label = random.choice(labels)
+    rnd_label_path = os.path.join(path, label)
+    rnd_sample = random.choice([x for x in os.listdir(rnd_label_path)
+                                if os.path.isfile(os.path.join(rnd_label_path, x))
+                                and os.path.getsize(os.path.join(rnd_label_path, x)) == input_size])
+    rnd_sample_path = os.path.join(path, label, rnd_sample)
+    return rnd_sample_path
+
+'''
+from utils import visualize_mfcc
+sample = pick_random_sample()
+mfcc = wav2mfcc(sample)
+print(np.shape(mfcc))
+visualize_mfcc(mfcc)
 
 #make_dummy_dir(dir_size=3)
 #check_file_sizes(DUMMY_PATH)
 #save_data_to_array(path=DUMMY_PATH)
-# Func to prune different filesizes (and save spectogramms?)
+'''

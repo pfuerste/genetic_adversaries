@@ -5,7 +5,7 @@ from keras.utils import to_categorical
 import numpy as np
 import matplotlib.pyplot as plt
 import librosa.display
-import random
+
 
 DATA_PATH = "./data/"
 DUMMY_PATH = "./dummydata/"
@@ -27,11 +27,14 @@ def get_labels(path=DATA_PATH):
 
 
 # Handy function to convert wav2mfcc
-def wav2mfcc(file_path, max_len=11):
+def wav2mfcc(file_path, max_len=98):
     wave, sr = librosa.load(file_path, mono=True, sr=None)
-    wave = wave[::3]
-    mfcc = librosa.feature.mfcc(wave, sr=16000)
 
+    #wave = wave[::3]
+    mfcc = librosa.feature.mfcc(wave, n_mfcc=40, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
+
+
+    #mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
     # If maximum length exceeds mfcc lengths then pad the remaining ones
     if max_len > mfcc.shape[1]:
         pad_width = max_len - mfcc.shape[1]
@@ -58,13 +61,13 @@ def get_train_test(split_ratio=0.6, random_state=42):
     labels, indices, _ = get_labels(DATA_PATH)
 
     # Getting first arrays
-    X = np.load(os.path.join(labels[0], '.npy'))
+    X = np.load(os.path.join('mfcc_vectors', labels[0], '.npy'))
     y = np.zeros(X.shape[0])
 
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
-        x = np.load(os.path.join(label, '.npy'))
-        X = np.vstack((X, x))
+        x = np.load(os.path.join('mfcc_vectors', label, '.npy'))
+        X = np.vstack(X, x)
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 
     assert X.shape[0] == len(y)
