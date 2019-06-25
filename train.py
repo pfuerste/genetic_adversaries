@@ -1,5 +1,5 @@
-from utils import *
-from model import get_model, predict
+from genetic_adversaries.utils import *
+from genetic_adversaries.model import get_model, predict
 from keras.utils import to_categorical
 
 

@@ -1,7 +1,7 @@
 import keras
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-from utils import wav2mfcc, get_labels
+from genetic_adversaries.utils import wav2mfcc, get_labels
 import numpy as np
 
 num_classes = get_labels()[0]
