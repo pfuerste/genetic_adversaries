@@ -1,5 +1,5 @@
 import os
-from genetic_adversaries.utils import get_labels, wav2mfcc, wav2spec
+from .utils import get_labels, wav2mfcc, wav2spec
 import random
 from shutil import copyfile
 import numpy as np

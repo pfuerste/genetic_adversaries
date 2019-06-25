@@ -1,7 +1,6 @@
-from genetic_adversaries.utils import *
-from genetic_adversaries.model import get_model, predict
+from .utils import *
+from .model import get_model, predict
 from keras.utils import to_categorical
-
 
 # Second dimension of the feature is dim2
 
