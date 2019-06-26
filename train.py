@@ -8,7 +8,7 @@ import numpy as np
 
 # Feature dimension
 input_shape = (20, 11, 1)
-epochs = 20
+epochs = 75
 batch_size = 100
 verbose = 1
 num_classes = 30
@@ -26,6 +26,6 @@ y_test_hot = to_categorical(y_test)
 
 
 model = Model(input_shape)
-#model.model.fit(X_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=verbose, validation_data=(X_test, y_test_hot))
+model.model.fit(X_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=verbose, validation_data=(X_test, y_test_hot))
 
 print(model.predict(pick_random_sample(path=get_data_path())))
