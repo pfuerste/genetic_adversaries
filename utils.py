@@ -14,7 +14,7 @@ def wav2mfcc(file_path, max_len=98, n_mfcc=40):
     wave, sr = librosa.load(file_path, mono=True, sr=None)
 
     # wave = wave[::3]
-    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
+    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc)
 
     # mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
     # If maximum length exceeds mfcc lengths then pad the remaining ones
