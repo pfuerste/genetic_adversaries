@@ -1,5 +1,5 @@
 import os
-from .utils import get_labels, wav2mfcc, wav2spec
+from utils import get_labels, wav2mfcc, wav2spec
 import random
 from shutil import copyfile
 import numpy as np
@@ -73,7 +73,7 @@ def save_data_to_array(output_format, path=DATA_PATH, input_size=32044, max_len=
             for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
                 mfcc = wav2mfcc(wavfile, max_len=max_len)
                 if Transpose:
-                    out_vectors.append(mfcc.T)
+                    out_vectors.append(mfcc)
                 else:
                     out_vectors.append(mfcc)
         try:

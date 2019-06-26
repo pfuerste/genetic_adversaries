@@ -7,9 +7,8 @@ import numpy as np
 num_classes = len(get_labels()[0])
 
 
-def get_model(simple=False):
-    if simple:
-        input_shape = (20, 11, 1)
+def get_model(input_shape):
+    if input_shape == (20, 11, 1):
         model = Sequential()
         model.add(Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
         model.add(Conv2D(48, kernel_size=(2, 2), activation='relu'))
@@ -23,13 +22,12 @@ def get_model(simple=False):
         model.add(Dropout(0.4))
         model.add(Dense(num_classes, activation='softmax'))
 
-    else:
-        input_shape = (98, 40, 1)
+    elif input_shape == (98, 40, 1):
         model = Sequential()
-        model.add(Conv2D(64, kernel_size=(60, 8), input_shape=input_shape))
+        model.add(Conv2D(64, kernel_size=(60, 20), input_shape=input_shape))
         model.add(MaxPooling2D(pool_size=(1, 3)))
         model.add(Dropout(0.25))
-        model.add(Conv2D(64, kernel_size=(10, 4), input_shape=input_shape))
+        model.add(Conv2D(64, kernel_size=(10, 4)))
         model.add(Flatten())
         model.add(Dense(32))
         model.add(Dense(128, activation='relu'))
@@ -39,18 +37,13 @@ def get_model(simple=False):
     model.compile(loss=keras.losses.categorical_crossentropy,
                   optimizer=keras.optimizers.Adadelta(),
                   metrics=['accuracy'])
-    for layer in model.layers:
-        print(layer, layer.output_shape)
     return model
 
 
-model = get_model()
-
-
 # Predicts one sample
-def predict(filepath, model):
+def predict(filepath, model, input_shape):
     sample = wav2mfcc(filepath)
-    sample_reshaped = sample.reshape(1, feature_dim_1, feature_dim_2, channel)
+    sample_reshaped = sample.reshape(1, input_shape[0], input_shape[1], input_shape[2])
     return get_labels()[0][
             np.argmax(model.predict(sample_reshaped))
     ]

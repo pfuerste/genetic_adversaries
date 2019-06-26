@@ -18,6 +18,8 @@ def get_labels(path=DATA_PATH):
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
     if 'mfcc_vectors' in labels:
         labels.remove('mfcc_vectors')
+    if 'mfcc_vectors_big' in labels:
+        labels.remove('mfcc_vectors_big')
     if 'spec_vectors' in labels:
         labels.remove('spec_vectors')
     if '_background_noise_' in labels:
@@ -30,11 +32,10 @@ def get_labels(path=DATA_PATH):
 def wav2mfcc(file_path, max_len=98):
     wave, sr = librosa.load(file_path, mono=True, sr=None)
 
-    #wave = wave[::3]
+    # wave = wave[::3]
     mfcc = librosa.feature.mfcc(wave, n_mfcc=40, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
 
-
-    #mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
+    # mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
     # If maximum length exceeds mfcc lengths then pad the remaining ones
     if max_len > mfcc.shape[1]:
         pad_width = max_len - mfcc.shape[1]
@@ -44,7 +45,7 @@ def wav2mfcc(file_path, max_len=98):
     else:
         mfcc = mfcc[:, :max_len]
 
-    return mfcc
+    return mfcc.T
 
 
 def wav2spec(file_path, downsample=True):
@@ -56,18 +57,20 @@ def wav2spec(file_path, downsample=True):
     return spec
 
 
-def get_train_test(split_ratio=0.6, random_state=42):
+def get_train_test(path=DATA_PATH, input_shape=(98, 40, 1), split_ratio=0.6, random_state=42):
     # Get available labels
-    labels, indices, _ = get_labels(DATA_PATH)
+    labels, indices, _ = get_labels(path)
 
     # Getting first arrays
-    X = np.load(os.path.join('mfcc_vectors', labels[0], '.npy'))
+    if input_shape == (98, 40, 1): vec_dir = os.path.join(path, 'mfcc_vectors_big')
+    else: vec_dir = os.path.join(path, 'mfcc_vectors')
+    X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
     y = np.zeros(X.shape[0])
 
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
-        x = np.load(os.path.join('mfcc_vectors', label, '.npy'))
-        X = np.vstack(X, x)
+        x = np.load(os.path.join(vec_dir, label+'.npy'))
+        X = np.vstack((X, x))
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 
     assert X.shape[0] == len(y)
