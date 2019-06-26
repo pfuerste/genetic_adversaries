@@ -54,16 +54,17 @@ def check_file_sizes(path=get_data_path(), check_size='32044', recursive=True):
 
 # saves wavs in a folder in numpy-array, one for each label sub-folder
 def save_data_to_array(output_format, path=get_data_path(), input_size=32044,
-                       max_len=98, Transpose = True):
+                       max_len=98, n_mfcc=40, Transpose=False):
+    if max_len == 98: folder='_vectors_big'
+    else: folder='_vectors'
     labels, _, _ = get_labels(path)
 
     for label in labels:
-        # Init mfcc vectors
         out_vectors = []
 
         wavfiles = [os.path.join(path, label, wavfile) for wavfile in os.listdir(os.path.join(path, label))
                     if os.path.getsize(os.path.join(path, label, wavfile)) == input_size]
-        if os.path.isfile(os.path.join(path, output_format+'_vectors_big', label+'.npy')):
+        if os.path.isfile(os.path.join(path, output_format+folder, label+'.npy')):
             print("Data of label {} already processed".format(label))
             continue
         if output_format is 'spec':
@@ -72,16 +73,16 @@ def save_data_to_array(output_format, path=get_data_path(), input_size=32044,
                 out_vectors.append(spec)
         elif output_format is 'mfcc':
             for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
-                mfcc = wav2mfcc(wavfile, max_len=max_len)
+                mfcc = wav2mfcc(wavfile, max_len=max_len, n_mfcc=n_mfcc)
                 if Transpose:
-                    out_vectors.append(mfcc)
+                    out_vectors.append(mfcc).T
                 else:
                     out_vectors.append(mfcc)
         try:
-            os.mkdir(os.path.join(path, output_format+'_vectors_big'))
+            os.mkdir(os.path.join(path, output_format+folder))
         except FileExistsError:
             pass
-        np.save(os.path.join(path, output_format+'_vectors_big', label+'.npy'), out_vectors)
+        np.save(os.path.join(path, output_format+folder, label+'.npy'), out_vectors)
 
 
 

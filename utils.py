@@ -10,11 +10,11 @@ from paths import get_data_path, get_labels
 
 
 # Handy function to convert wav2mfcc
-def wav2mfcc(file_path, max_len=98):
+def wav2mfcc(file_path, max_len=98, n_mfcc=40):
     wave, sr = librosa.load(file_path, mono=True, sr=None)
 
     # wave = wave[::3]
-    mfcc = librosa.feature.mfcc(wave, n_mfcc=40, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
+    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
 
     # mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
     # If maximum length exceeds mfcc lengths then pad the remaining ones
@@ -55,8 +55,6 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
         X = np.vstack((X, x))
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 
-    for elem in X:
-        elem = elem.T
     assert X.shape[0] == len(y)
 
     return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=True)

@@ -30,10 +30,10 @@ class Model:
 
         elif input_shape == (40, 98, 1):
             model = Sequential()
-            model.add(Conv2D(64, kernel_size=(60, 20), input_shape=input_shape))
+            model.add(Conv2D(64, kernel_size=(20, 60), input_shape=input_shape))
             model.add(MaxPooling2D(pool_size=(3, 1)))
             model.add(Dropout(0.25))
-            model.add(Conv2D(64, kernel_size=(10, 4)))
+            model.add(Conv2D(64, kernel_size=(4, 10)))
             model.add(Flatten())
             model.add(Dense(32))
             model.add(Dense(128, activation='relu'))
@@ -48,7 +48,7 @@ class Model:
 
     # Predicts one sample
     def predict(self, filepath):
-        sample = wav2mfcc(filepath)
+        sample = wav2mfcc(filepath, max_len=self.input_shape[1], n_mfcc=self.input_shape[0])
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
         return get_labels()[0][
