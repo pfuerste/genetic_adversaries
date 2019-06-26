@@ -45,6 +45,7 @@ def get_train_test(path=get_data_path(), input_shape=(98, 40, 1), split_ratio=0.
     # Getting first arrays
     if input_shape == (98, 40, 1): vec_dir = os.path.join(path, 'mfcc_vectors_big')
     else: vec_dir = os.path.join(path, 'mfcc_vectors')
+
     X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
     y = np.zeros(X.shape[0])
 

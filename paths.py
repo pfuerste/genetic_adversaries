@@ -11,7 +11,7 @@ def get_data_path():
         return path
     else:
         path = './data/'
-    return path
+        return path
 
 
 def get_dummy_path():
@@ -24,8 +24,9 @@ def get_dummy_path():
 
 # Input: Folder Path
 def get_labels(path=get_data_path()):
-    # labels = os.listdir(path)
+
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
+
     if 'mfcc_vectors' in labels:
         labels.remove('mfcc_vectors')
     if 'mfcc_vectors_big' in labels:
@@ -34,7 +35,9 @@ def get_labels(path=get_data_path()):
         labels.remove('spec_vectors')
     if '_background_noise_' in labels:
         labels.remove('_background_noise_')
+
     label_indices = np.arange(0, len(labels))
+
     return labels, label_indices, to_categorical(label_indices)
 
 

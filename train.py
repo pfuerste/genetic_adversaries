@@ -1,7 +1,7 @@
 from keras.utils import to_categorical
 
 from model import Model
-from paths import get_dummy_path, pick_random_sample
+from paths import get_dummy_path, get_data_path, pick_random_sample
 from utils import get_train_test
 
 import numpy as np
