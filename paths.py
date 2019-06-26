@@ -7,7 +7,7 @@ from keras.utils import to_categorical
 
 def get_data_path():
     path = '../../content/drive/My Drive/data'
-    if os.path.isdir(path):
+    if os.path.isdir('../genetic_adversaries'):
         return path
     else:
         path = './data/'
