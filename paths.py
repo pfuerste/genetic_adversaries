@@ -6,9 +6,8 @@ from keras.utils import to_categorical
 
 
 def get_data_path():
-    try:
-        path = './data/'
-    except FileNotFoundError:
+    path = './data/'
+    if not os.path.isdir(path):
         path = '../content/drive/My Drive/data'
     return path
 
