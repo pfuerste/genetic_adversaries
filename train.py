@@ -1,5 +1,3 @@
-from typing import Tuple
-
 from utils import *
 from model import get_model, predict
 from keras.utils import to_categorical
