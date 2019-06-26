@@ -15,11 +15,12 @@ def get_data_path():
 
 
 def get_dummy_path():
-    try:
+    path = '../../content/drive/My Drive/dummydata'
+    if os.path.isdir('../genetic_adversaries'):
+        return path
+    else:
         path = './dummydata/'
-    except FileNotFoundError:
-        path = '../content/drive/My Drive/dummydata'
-    return path
+        return path
 
 
 # Input: Folder Path

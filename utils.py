@@ -26,7 +26,7 @@ def wav2mfcc(file_path, max_len=98):
     else:
         mfcc = mfcc[:, :max_len]
 
-    return mfcc.T
+    return mfcc
 
 
 def wav2spec(file_path, downsample=True):
@@ -38,12 +38,12 @@ def wav2spec(file_path, downsample=True):
     return spec
 
 
-def get_train_test(path=get_data_path(), input_shape=(98, 40, 1), split_ratio=0.6, random_state=42):
+def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.6, random_state=42):
     # Get available labels
     labels, indices, _ = get_labels(path)
 
     # Getting first arrays
-    if input_shape == (98, 40, 1): vec_dir = os.path.join(path, 'mfcc_vectors_big')
+    if input_shape == (40, 98, 1): vec_dir = os.path.join(path, 'mfcc_vectors_big')
     else: vec_dir = os.path.join(path, 'mfcc_vectors')
 
     X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
@@ -55,6 +55,8 @@ def get_train_test(path=get_data_path(), input_shape=(98, 40, 1), split_ratio=0.
         X = np.vstack((X, x))
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 
+    for elem in X:
+        elem = elem.T
     assert X.shape[0] == len(y)
 
     return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=True)

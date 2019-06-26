@@ -7,9 +7,9 @@ from utils import get_train_test
 import numpy as np
 
 # Feature dimension
-input_shape = (98, 40, 1)
-epochs = 1
-batch_size = 1
+input_shape = (40, 98, 1)
+epochs = 10
+batch_size = 100
 verbose = 1
 num_classes = 30
 

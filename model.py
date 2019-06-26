@@ -28,10 +28,10 @@ class Model:
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-        elif input_shape == (98, 40, 1):
+        elif input_shape == (40, 98, 1):
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(60, 20), input_shape=input_shape))
-            model.add(MaxPooling2D(pool_size=(1, 3)))
+            model.add(MaxPooling2D(pool_size=(3, 1)))
             model.add(Dropout(0.25))
             model.add(Conv2D(64, kernel_size=(10, 4)))
             model.add(Flatten())
