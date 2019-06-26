@@ -15,6 +15,7 @@ class Model:
 
     def get_model(self, input_shape):
         if input_shape == (20, 11, 1):
+            print('Simple Model chosen.')
             model = Sequential()
             model.add(Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
             model.add(Conv2D(48, kernel_size=(2, 2), activation='relu'))
@@ -29,9 +30,10 @@ class Model:
             model.add(Dense(self.num_classes, activation='softmax'))
 
         elif input_shape == (40, 98, 1):
+            print('Complex Model chosen.')
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
-            model.add(MaxPooling2D(pool_size=(3, 1)))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Dropout(0.25))
             model.add(Conv2D(64, kernel_size=(2, 2), activation='relu'))
             model.add(Flatten())
@@ -42,8 +44,7 @@ class Model:
         model.compile(loss=keras.losses.categorical_crossentropy,
                       optimizer=keras.optimizers.Adadelta(),
                       metrics=['accuracy'])
-        for layer in model.layers:
-            print(layer)
+
         return model
 
     # Predicts one sample
