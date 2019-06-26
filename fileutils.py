@@ -55,7 +55,7 @@ def check_file_sizes(path=get_data_path(), check_size='32044', recursive=True):
 # saves wavs in a folder in numpy-array, one for each label sub-folder
 def save_data_to_array(output_format, path=get_data_path(), input_size=32044,
                        max_len=98, n_mfcc=40, Transpose=False):
-    if max_len == 98: folder='_vectors_big'
+    if max_len == 98: folder='_vectors_big2'
     else: folder='_vectors'
     labels, _, _ = get_labels(path)
 
