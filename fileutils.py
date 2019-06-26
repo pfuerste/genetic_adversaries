@@ -92,15 +92,3 @@ def pick_random_sample(path=DATA_PATH, input_size=32044):
                                 and os.path.getsize(os.path.join(rnd_label_path, x)) == input_size])
     rnd_sample_path = os.path.join(path, label, rnd_sample)
     return rnd_sample_path
-
-'''
-from utils import visualize_mfcc
-sample = pick_random_sample()
-mfcc = wav2mfcc(sample)
-print(np.shape(mfcc))
-visualize_mfcc(mfcc)
-
-#make_dummy_dir(dir_size=3)
-#check_file_sizes(DUMMY_PATH)
-#save_data_to_array(path=DUMMY_PATH)
-'''
