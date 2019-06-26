@@ -6,16 +6,17 @@ from utils import get_train_test
 
 import numpy as np
 
+
 # Feature dimension
 input_shape = (40, 98, 1)
-epochs = 10
+epochs = 100
 batch_size = 100
 verbose = 1
 num_classes = 30
 
 
 # Loading train set and test set
-X_train, X_test, y_train, y_test = get_train_test(path=get_dummy_path())
+X_train, X_test, y_train, y_test = get_train_test(path=get_dummy_path(), input_shape=input_shape)
 
 # Reshaping to perform 2D convolution
 X_train = X_train.reshape(X_train.shape[0], input_shape[0], input_shape[1], input_shape[2])
