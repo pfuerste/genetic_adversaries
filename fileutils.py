@@ -62,6 +62,9 @@ def save_data_to_array(output_format, path=DATA_PATH, input_size=32044, max_len=
 
         wavfiles = [os.path.join(path, label, wavfile) for wavfile in os.listdir(os.path.join(path, label))
                     if os.path.getsize(os.path.join(path, label, wavfile)) == input_size]
+        if os.path.isfile(os.path.join(path, output_format+'_vectors_big', label+'.npy')):
+            print("Data of label {} already processed".format(label))
+            continue
         if output_format is 'spec':
             for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
                 spec = wav2spec(wavfile)
