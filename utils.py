@@ -1,31 +1,12 @@
-import librosa
 import os
-from sklearn.model_selection import train_test_split
-from keras.utils import to_categorical
-import numpy as np
-import matplotlib.pyplot as plt
+
+import librosa
 import librosa.display
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
 
-
-DATA_PATH = "./data/"
-DUMMY_PATH = "./dummydata/"
-
-
-# Input: Folder Path
-# Output: Tuple (Label, Indices of the labels, one-hot encoded labels)
-def get_labels(path=DATA_PATH):
-    # labels = os.listdir(path)
-    labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
-    if 'mfcc_vectors' in labels:
-        labels.remove('mfcc_vectors')
-    if 'mfcc_vectors_big' in labels:
-        labels.remove('mfcc_vectors_big')
-    if 'spec_vectors' in labels:
-        labels.remove('spec_vectors')
-    if '_background_noise_' in labels:
-        labels.remove('_background_noise_')
-    label_indices = np.arange(0, len(labels))
-    return labels, label_indices, to_categorical(label_indices)
+from paths import get_data_path, get_labels
 
 
 # Handy function to convert wav2mfcc
@@ -57,7 +38,7 @@ def wav2spec(file_path, downsample=True):
     return spec
 
 
-def get_train_test(path=DATA_PATH, input_shape=(98, 40, 1), split_ratio=0.6, random_state=42):
+def get_train_test(path=get_data_path(), input_shape=(98, 40, 1), split_ratio=0.6, random_state=42):
     # Get available labels
     labels, indices, _ = get_labels(path)
 
@@ -79,7 +60,7 @@ def get_train_test(path=DATA_PATH, input_shape=(98, 40, 1), split_ratio=0.6, ran
 
 
 # returns a dictionary of format dic['label'][['path']['mfcc']]
-def prepare_dataset(path=DATA_PATH):
+def prepare_dataset(path=get_data_path()):
     labels, _, _ = get_labels(path)
     data = {}
     for label in labels:
@@ -101,7 +82,7 @@ def prepare_dataset(path=DATA_PATH):
 
 
 # returns the first 100 mfccs per label in a list[[label][mfcc]]
-def load_dataset(path=DATA_PATH):
+def load_dataset(path=get_data_path()):
     data = prepare_dataset(path)
 
     dataset = []

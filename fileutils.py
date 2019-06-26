@@ -1,16 +1,16 @@
 import os
-from utils import get_labels, wav2mfcc, wav2spec
 import random
 from shutil import copyfile
+
 import numpy as np
 from tqdm import tqdm
 
-DATA_PATH = "./data/"
-DUMMY_PATH = "./dummydata/"
+from paths import get_data_path, get_dummy_path, get_labels
+from utils import wav2mfcc, wav2spec
 
 
 # Copies dir_size wva-files per class to a dummy-data-folder for testing purposes
-def make_dummy_dir(path=DATA_PATH, dummypath=DUMMY_PATH, input_size=32044, dir_size=1):
+def make_dummy_dir(path=get_data_path(), dummypath=get_dummy_path(), input_size=32044, dir_size=1):
     labels = get_labels(path)[0]
     for label in labels:
         old_dir = os.path.join(path, label)
@@ -25,7 +25,7 @@ def make_dummy_dir(path=DATA_PATH, dummypath=DUMMY_PATH, input_size=32044, dir_s
             copyfile(os.path.join(old_dir, file), os.path.join(new_dir, file))
 
 
-def check_file_sizes(path=DATA_PATH, check_size='32044', recursive=True):
+def check_file_sizes(path=get_data_path(), check_size='32044', recursive=True):
 
     dirs = [x for x in os.listdir(path) if os.path.isdir(os.path.join(path, x))
             and 'background_noise' not in x]
@@ -53,7 +53,8 @@ def check_file_sizes(path=DATA_PATH, check_size='32044', recursive=True):
 
 
 # saves wavs in a folder in numpy-array, one for each label sub-folder
-def save_data_to_array(output_format, path=DATA_PATH, input_size=32044, max_len=98, Transpose = True):
+def save_data_to_array(output_format, path=get_data_path(), input_size=32044,
+                       max_len=98, Transpose = True):
     labels, _, _ = get_labels(path)
 
     for label in labels:
@@ -83,12 +84,4 @@ def save_data_to_array(output_format, path=DATA_PATH, input_size=32044, max_len=
         np.save(os.path.join(path, output_format+'_vectors_big', label+'.npy'), out_vectors)
 
 
-def pick_random_sample(path=DATA_PATH, input_size=32044):
-    labels = get_labels(path)[0]
-    label = random.choice(labels)
-    rnd_label_path = os.path.join(path, label)
-    rnd_sample = random.choice([x for x in os.listdir(rnd_label_path)
-                                if os.path.isfile(os.path.join(rnd_label_path, x))
-                                and os.path.getsize(os.path.join(rnd_label_path, x)) == input_size])
-    rnd_sample_path = os.path.join(path, label, rnd_sample)
-    return rnd_sample_path
+

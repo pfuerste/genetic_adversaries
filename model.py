@@ -1,16 +1,16 @@
 import keras
-from keras.models import Sequential
-from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-from utils import wav2mfcc, get_labels
 import numpy as np
+from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from keras.models import Sequential
+
+from fileutils import get_labels
+from utils import wav2mfcc
 
 
 class Model:
-    def _init__(self, input_shape):
-        try:
-            self.num_classes = len(get_labels()[0])
-        except FileNotFoundError:
-            self.num_classes = len(get_labels(path='../content/drive/My Drive/data')[0])
+    def __init__(self, input_shape):
+        self.num_classes = len(get_labels()[0])
+        self.input_shape = input_shape
         self.model = self.get_model(input_shape)
 
     def get_model(self, input_shape):
@@ -39,12 +39,12 @@ class Model:
             model.add(Dense(128, activation='relu'))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-
         model.compile(loss=keras.losses.categorical_crossentropy,
                       optimizer=keras.optimizers.Adadelta(),
                       metrics=['accuracy'])
+        for layer in model.layers:
+            print(layer)
         return model
-
 
     # Predicts one sample
     def predict(self, filepath):
