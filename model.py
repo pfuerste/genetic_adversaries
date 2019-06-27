@@ -50,9 +50,15 @@ class Model:
 
         return model
 
+    def get_confidence_scores(self, filepath):
+        sample = wav2mfcc(filepath, input_shape=self.input_shape)
+        sample_reshaped = sample.reshape(1, self.input_shape[0],
+                                         self.input_shape[1], self.input_shape[2])
+        return (self.model.predict(sample_reshaped, 1))
+
     # Predicts one sample
     def predict(self, filepath):
-        sample = wav2mfcc(filepath, max_len=self.input_shape[1], n_mfcc=self.input_shape[0])
+        sample = wav2mfcc(filepath, input_shape=self.input_shape)
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
         return get_labels()[0][
