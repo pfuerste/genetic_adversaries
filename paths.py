@@ -25,7 +25,8 @@ def get_dummy_path():
 
 # Input: Folder Path
 def get_labels(path=get_data_path()):
-
+    labels = ['six', 'zero', 'down', 'right']
+    '''
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
 
     non_labels = ['mfcc_vectors_40x98', 'mfcc_vectors_98x40', 'mfcc_vectors', 'mfcc_vectors_big',
@@ -35,7 +36,7 @@ def get_labels(path=get_data_path()):
             labels.remove(non_label)
         except ValueError:
             pass
-
+    '''
     label_indices = np.arange(0, len(labels))
 
     return labels, label_indices, to_categorical(label_indices)
