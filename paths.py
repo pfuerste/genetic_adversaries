@@ -32,6 +32,8 @@ def get_labels(path=get_data_path()):
         labels.remove('mfcc_vectors')
     if 'mfcc_vectors_big' in labels:
         labels.remove('mfcc_vectors_big')
+    if 'mfcc_vectors_big2' in labels:
+        labels.remove('mfcc_vectors_big2')
     if 'spec_vectors' in labels:
         labels.remove('spec_vectors')
     if '_background_noise_' in labels:
