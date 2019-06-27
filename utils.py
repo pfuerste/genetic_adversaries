@@ -13,7 +13,6 @@ from paths import get_data_path, get_labels
 def wav2mfcc(file_path, max_len=98, n_mfcc=40):
     wave, sr = librosa.load(file_path, mono=True, sr=None)
 
-    # wave = wave[::3]
     mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc)
 
     # mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
@@ -29,15 +28,6 @@ def wav2mfcc(file_path, max_len=98, n_mfcc=40):
     return mfcc
 
 
-def wav2spec(file_path, downsample=True):
-    wave, sr = librosa.load(file_path, mono=True, sr=None)
-    if downsample:
-        wave = wave[::3]
-    # Why abs?
-    spec = np.abs(librosa.stft(wave))
-    return spec
-
-
 def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.6, random_state=42):
     # Get available labels
     labels, indices, _ = get_labels(path)
@@ -50,15 +40,11 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
 
     # Load data of first label
     X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
-    for j, array in enumerate(X):
-        X[j] = array.T
     y = np.zeros(X.shape[0])
 
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
         x = np.load(os.path.join(vec_dir, label+'.npy'))
-        for j, array in enumerate(x):
-            x[j] = array.T
         X = np.vstack((X, x))
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 

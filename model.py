@@ -8,13 +8,13 @@ from utils import wav2mfcc
 
 
 class Model:
-    def __init__(self, input_shape):
+    def __init__(self, input_shape, type):
         self.num_classes = len(get_labels()[0])
         self.input_shape = input_shape
-        self.model = self.get_model(input_shape)
+        self.model = self.get_model(input_shape, type)
 
-    def get_model(self, input_shape):
-        if input_shape == (20, 11, 1):
+    def get_model(self, input_shape, type):
+        if type == 1:
             print('Simple Model chosen.')
             model = Sequential()
             model.add(Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
@@ -29,16 +29,19 @@ class Model:
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-        elif input_shape == (40, 98, 1):
+        elif type == 2:
             print('Complex Model chosen.')
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
+            model.add(Conv2D(128, kernel_size=(2, 2), activation='relu'))
             model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Dropout(0.25))
             model.add(Conv2D(64, kernel_size=(2, 2), activation='relu'))
             model.add(Flatten())
             model.add(Dense(32))
+            model.add((Dropout(0.25)))
             model.add(Dense(128, activation='relu'))
+            model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
         model.compile(loss=keras.losses.categorical_crossentropy,

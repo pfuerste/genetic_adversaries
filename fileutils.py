@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 
 from paths import get_data_path, get_dummy_path, get_labels
-from utils import wav2mfcc, wav2spec
+from utils import wav2mfcc
 
 
 # Copies dir_size wva-files per class to a dummy-data-folder for testing purposes
@@ -67,11 +67,8 @@ def save_data_to_array(output_format, path=get_data_path(), input_size=32044,
         if os.path.isfile(os.path.join(path, output_format+folder, label+'.npy')):
             print("Data of label {} already processed".format(label))
             continue
-        if output_format is 'spec':
-            for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
-                spec = wav2spec(wavfile)
-                out_vectors.append(spec)
-        elif output_format is 'mfcc':
+
+        if output_format is 'mfcc':
             for wavfile in tqdm(wavfiles, "Saving vectors of label - '{}'".format(label)):
                 mfcc = wav2mfcc(wavfile, max_len=max_len, n_mfcc=n_mfcc)
                 if Transpose:
