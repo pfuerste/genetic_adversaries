@@ -50,11 +50,15 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
 
     # Load data of first label
     X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
+    for j, array in enumerate(X):
+        X[j] = array.T
     y = np.zeros(X.shape[0])
 
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
         x = np.load(os.path.join(vec_dir, label+'.npy'))
+        for j, array in enumerate(x):
+            x[j] = array.T
         X = np.vstack((X, x))
         y = np.append(y, np.full(x.shape[0], fill_value=(i + 1)))
 
