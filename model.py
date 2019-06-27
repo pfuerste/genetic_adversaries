@@ -32,11 +32,11 @@ class Model:
         elif type == 2:
             print('Complex Model chosen.')
             model = Sequential()
-            model.add(Conv2D(64, kernel_size=(60, 20), activation='relu', input_shape=input_shape))
+            model.add(Conv2D(64, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
             model.add(Conv2D(128, kernel_size=(2, 2), activation='relu'))
             model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Dropout(0.25))
-            model.add(Conv2D(64, kernel_size=(10, 4), activation='relu'))
+            model.add(Conv2D(64, kernel_size=(2, 2), activation='relu'))
             model.add(Flatten())
             model.add(Dense(32))
             model.add((Dropout(0.25)))
