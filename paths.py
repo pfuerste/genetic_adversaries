@@ -28,16 +28,13 @@ def get_labels(path=get_data_path()):
 
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
 
-    if 'mfcc_vectors' in labels:
-        labels.remove('mfcc_vectors')
-    if 'mfcc_vectors_big' in labels:
-        labels.remove('mfcc_vectors_big')
-    if 'mfcc_vectors_big2' in labels:
-        labels.remove('mfcc_vectors_big2')
-    if 'spec_vectors' in labels:
-        labels.remove('spec_vectors')
-    if '_background_noise_' in labels:
-        labels.remove('_background_noise_')
+    non_labels = ['mfcc_vectors_40x98', 'mfcc_vectors_98x40', 'mfcc_vectors', 'mfcc_vectors_big',
+                  'mfcc_vectors_big2', 'spec_vectors', '_background_noise_' ]
+    for non_label in non_labels:
+        try:
+            labels.remove(non_label)
+        except ValueError:
+            pass
 
     label_indices = np.arange(0, len(labels))
 

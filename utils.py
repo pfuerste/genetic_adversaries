@@ -10,11 +10,12 @@ from paths import get_data_path, get_labels
 
 
 # Handy function to convert wav2mfcc
-def wav2mfcc(file_path, max_len=98, n_mfcc=40):
+def wav2mfcc(file_path, input_shape):
+    n_mfcc = input_shape[0]
+    max_len = input_shape[1]
     wave, sr = librosa.load(file_path, mono=True, sr=None)
 
-    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc)
-
+    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
     # mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
     # If maximum length exceeds mfcc lengths then pad the remaining ones
     if max_len > mfcc.shape[1]:
@@ -33,15 +34,15 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
     labels, indices, _ = get_labels(path)
 
     # Getting first arrays
-    if input_shape == (40, 98, 1): vec_dir = os.path.join(path, 'mfcc_vectors_big2')
-    elif input_shape == (98, 40 , 1): vec_dir = os.path.join(path, 'mfcc_vectors_big')
+    if input_shape == (40, 98, 1): vec_dir = os.path.join(path, 'mfcc_vectors_40x98')
+    elif input_shape == (98, 40 , 1): vec_dir = os.path.join(path, 'mfcc_vectors_98x40')
     else: vec_dir = os.path.join(path, 'mfcc_vectors')
     print('Loading .npy data from {}'.format(vec_dir))
 
     # Load data of first label
     X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
     y = np.zeros(X.shape[0])
-
+    print(labels)
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
         x = np.load(os.path.join(vec_dir, label+'.npy'))
