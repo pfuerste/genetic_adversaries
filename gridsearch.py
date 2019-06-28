@@ -7,8 +7,9 @@ from paths import get_dummy_path
 
 
 class GridSearch:
-    def __init__(self, input_shape, **kwargs):
+    def __init__(self, input_shape, verbose=1, **kwargs):
         self.input_shape = input_shape
+        self.verbose = verbose
         self.hist = dict()
         self.hyperparams = check_params(**kwargs)
         self.permutations = self.get_perm()
@@ -30,7 +31,7 @@ class GridSearch:
             model_type, optimizer, batch_size, epochs = instance
 
             model = Model(self.input_shape, model_type, get_optimizer(optimizer))
-            hist = model.model.fit(x_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=0,
+            hist = model.model.fit(x_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=self.verbose,
                                    validation_data=(x_test, y_test_hot))
             # Log instance params and acc & val_acc at epoch with highest val_acc
             self.hist[index] = dict(hyperparams=instance, peak_epoch=np.argmax(hist.history['val_acc']) + 1,
