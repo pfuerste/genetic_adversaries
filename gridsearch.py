@@ -12,7 +12,7 @@ class GridSearch:
         self.hist = dict()
         self.hyperparams = check_params(**kwargs)
         self.permutations = self.get_perm()
-        self.data = reshape_data(input_shape, *get_train_test(path=get_dummy_path(), input_shape=input_shape))
+        self.data = reshape_data(input_shape, *get_train_test(input_shape=input_shape))
 
     def get_perm(self):
         array = list(self.hyperparams.values())
