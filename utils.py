@@ -5,6 +5,7 @@ import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
+from keras.utils import to_categorical
 
 from paths import get_data_path, get_labels
 
@@ -29,7 +30,7 @@ def wav2mfcc(file_path, input_shape):
     return mfcc
 
 
-def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.6, random_state=42):
+def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.7, random_state=42):
     # Get available labels
     labels, indices, _ = get_labels(path)
 
@@ -42,7 +43,6 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
     # Load data of first label
     X = np.load(os.path.join(vec_dir, labels[0]+'.npy'))
     y = np.zeros(X.shape[0])
-    print(labels)
     # Append all of the dataset into one single array, same goes for y
     for i, label in enumerate(labels[1:]):
         x = np.load(os.path.join(vec_dir, label+'.npy'))
@@ -52,6 +52,16 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
     assert X.shape[0] == len(y)
 
     return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=True)
+
+
+def reshape_data(input_shape, x_train, x_test, y_train, y_test):
+    x_train = x_train.reshape(x_train.shape[0], input_shape[0], input_shape[1], input_shape[2])
+    x_test = x_test.reshape(x_test.shape[0], input_shape[0], input_shape[1], input_shape[2])
+
+    y_train_hot = to_categorical(y_train)
+    y_test_hot = to_categorical(y_test)
+
+    return x_train, x_test, y_train_hot, y_test_hot
 
 
 # returns a dictionary of format dic['label'][['path']['mfcc']]
