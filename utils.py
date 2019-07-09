@@ -10,6 +10,11 @@ from keras.utils import to_categorical
 from paths import get_data_path, get_labels
 
 
+def wav(file_path):
+    wave, sr = librosa.load(file_path, mono=True, sr=None)
+    return wave
+
+
 # Handy function to convert wav2mfcc
 def wav2mfcc(file_path, input_shape):
     n_mfcc = input_shape[0]

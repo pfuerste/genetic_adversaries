@@ -6,20 +6,20 @@ from keras.utils import to_categorical
 
 
 def get_data_path():
-    path = '../../content/drive/My Drive/data'
-    if os.path.isdir('../genetic_adversaries'):
+    if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
+        path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'data')
         return path
     else:
-        path = './data/'
+        path = os.path.join('.', 'data')
         return path
 
 
 def get_dummy_path():
-    path = '../../content/drive/My Drive/dummydata'
-    if os.path.isdir('../genetic_adversaries'):
+    if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
+        path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'dummydata')
         return path
     else:
-        path = './dummydata/'
+        path = os.path.join('.', 'dummydata')
         return path
 
 

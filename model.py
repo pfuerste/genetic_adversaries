@@ -58,7 +58,7 @@ class Model:
             model.add(Dense(self.num_classes, activation='softmax'))
 
         elif type == 4:
-            print('Experimental Model (3) chosen.')
+            print('Experimental Model (4) chosen.')
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(8, 20), activation='relu', input_shape=input_shape))
             model.add(Dropout(0.25))
