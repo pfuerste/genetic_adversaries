@@ -50,7 +50,7 @@ class GeneticSearch:
 
     # Difference between initial logits and logits of current population
     def score_fitness(self):
-
+        
         raise NotImplementedError
 
     def get_fittest(self):
