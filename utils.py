@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
+import random
 
 from paths import get_data_path, get_labels
 
@@ -21,8 +22,27 @@ def wav2mfcc(file_path, input_shape):
     max_len = input_shape[1]
     wave, sr = librosa.load(file_path, mono=True, sr=None)
 
-    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc, hop_length = int(sr*0.01), n_fft = int(sr*0.03))
-    # mfcc = librosa.feature.mfcc(wave, sr=16000, n_mfcc=40)
+    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc, hop_length=int(sr*0.01), n_fft=int(sr*0.03))
+
+    # If maximum length exceeds mfcc lengths then pad the remaining ones
+    if max_len > mfcc.shape[1]:
+        pad_width = max_len - mfcc.shape[1]
+        mfcc = np.pad(mfcc, pad_width=((0, 0), (0, pad_width)), mode='constant')
+
+    # Else cutoff the remaining parts
+    else:
+        mfcc = mfcc[:, :max_len]
+
+    return mfcc
+
+
+def array2mfcc(array, input_shape):
+    n_mfcc = input_shape[0]
+    max_len = input_shape[1]
+    wave = array
+    sr = 16000
+    mfcc = librosa.feature.mfcc(wave, n_mfcc=n_mfcc, hop_length=int(sr*0.01), n_fft=int(sr*0.03))
+
     # If maximum length exceeds mfcc lengths then pad the remaining ones
     if max_len > mfcc.shape[1]:
         pad_width = max_len - mfcc.shape[1]
@@ -114,3 +134,6 @@ def visualize_mfcc(array):
     plt.tight_layout()
     plt.show()
 
+
+def random_pairs(number_list):
+    return [number_list[i] for i in random.sample(range(len(number_list)), 2)]

@@ -3,8 +3,8 @@ import numpy as np
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras.models import Sequential
 
-from fileutils import get_labels
-from utils import wav2mfcc
+from paths import get_labels
+from utils import wav2mfcc, array2mfcc
 
 
 class Model:
@@ -78,17 +78,37 @@ class Model:
 
         return model
 
-    def get_confidence_scores(self, filepath):
+    # Predicts one filepath
+    def predict(self, filepath, index=False):
         sample = wav2mfcc(filepath, input_shape=self.input_shape)
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
-        return self.model.predict(sample_reshaped, 1)
-
-    # Predicts one sample
-    def predict(self, filepath):
-        sample = wav2mfcc(filepath, input_shape=self.input_shape)
-        sample_reshaped = sample.reshape(1, self.input_shape[0],
-                                         self.input_shape[1], self.input_shape[2])
-        return get_labels()[0][
+        if not index:
+            return get_labels()[0][
+                    np.argmax(self.model.predict(sample_reshaped))
+            ]
+        else:
+            return get_labels()[1][
                 np.argmax(self.model.predict(sample_reshaped))
-        ]
+            ]
+
+    def get_confidence_scores(self, array):
+        sample = array2mfcc(array, input_shape=self.input_shape)
+        sample_reshaped = sample.reshape(1, self.input_shape[0],
+                                         self.input_shape[1], self.input_shape[2])
+        return self.model.predict(sample_reshaped)[0]
+
+    # In: wav_array
+    # Out: label index
+    def predict_array(self, array, index=False):
+        sample = array2mfcc(array, input_shape=self.input_shape)
+        sample_reshaped = sample.reshape(1, self.input_shape[0],
+                                         self.input_shape[1], self.input_shape[2])
+        if not index:
+            return get_labels()[0][
+                    np.argmax(self.model.predict(sample_reshaped))
+            ]
+        else:
+            return get_labels()[1][
+                np.argmax(self.model.predict(sample_reshaped))
+            ]

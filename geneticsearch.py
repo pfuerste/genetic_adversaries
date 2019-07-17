@@ -8,8 +8,7 @@ class GeneticSearch:
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
-        #self.mfcc = utils.wav2mfcc(filepath)
-        self.og_label = model.predict(filepath)
+        self.og_label = model.predict(filepath, index=True)
         self.epochs = epochs
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
@@ -17,7 +16,7 @@ class GeneticSearch:
         self.crossover_method = 'spc'
         self.popsize = popsize
         self.nb_genes = nb_genes
-        self.population = self.init_population()
+        self.population = None
 
     # Set up an initial population of slightly mutated wav-arrays
     def init_population(self):
@@ -30,12 +29,21 @@ class GeneticSearch:
 
     def crossover(self, par1, par2):
         if self.crossover_method == 'spc':
-            crossover_point = np.random.randint(0, self.genes)
-            ch1 = par1[:crossover_point].append(par2[crossover_point:])
-            ch2 = par2[:crossover_point].append(par1[crossover_point:])
+            crossover_point = np.random.randint(0, self.nb_genes-1)
+            ch1 = np.concatenate((par1[:crossover_point], par2[crossover_point:]))
+            ch2 = np.concatenate((par2[:crossover_point], par1[crossover_point:]))
         else:
             raise NotImplementedError
         return ch1, ch2
+
+    # Randomly selects pairs of the fittest individuals and generates the next population
+    def mate_pool(self, pool):
+        offspring = list()
+        parents = [utils.random_pairs(pool) for i in range(len(pool))]
+        # offspring = [self.crossover(*pair) for pair in parents]
+        for pair in parents:
+            offspring.extend(self.crossover(*pair))
+        return np.array(offspring)
 
     # First Try: Mutate nb_genes*mutation_rate random genes to
     # values from a uniform distribution [-1.0, 1.0] -> 0.015 first
@@ -48,10 +56,27 @@ class GeneticSearch:
             chromosome[index] = np.random.uniform(-1.0, 1.0)
         return chromosome
 
-    # Difference between initial logits and logits of current population
-    def score_fitness(self):
-        
-        raise NotImplementedError
+    # Sort by lowest confidence score of initial label
+    def fit_sort(self):
+        scores = np.empty(self.popsize)
+        for index, elem in enumerate(self.population):
+            scores[index] = self.model.get_confidence_scores(elem)[self.og_label]
+        sorted_pop = self.population[scores.argsort()]
+        sorted_pop = np.flip(sorted_pop)
+        return sorted_pop
 
     def get_fittest(self):
-        raise NotImplementedError
+        return self.fit_sort()[:self.nb_parents]
+
+    # Tries to decrease confidence in og label
+    # by applying crossover between the fittest members and mutating the offspring
+    def search(self):
+        self.population = self.init_population()
+        fittest = self.get_fittest()
+        for epoch in range(self.epochs):
+            offspring = self.mate_pool(fittest)
+            self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
+            fittest = self.get_fittest()
+        winner = self.get_fittest()[0]
+        print(self.og_label)
+        print(self.model.predict_array(winner, index=True))
