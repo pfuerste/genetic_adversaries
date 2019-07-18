@@ -4,6 +4,7 @@ desktop.ini
 __pychache__/*
 .idea*
 venv*
+*.h5
 
 # Datadirs
 data
@@ -80,3 +81,5 @@ fabric.properties
 __pycache__/
 
 *.zip
+
+*.wav

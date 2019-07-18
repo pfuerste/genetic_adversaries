@@ -28,9 +28,9 @@ class GridSearch:
             self.hyperparams, len(self.permutations)))
 
         for index, instance in enumerate(self.permutations):
-            model_type, optimizer, batch_size, epochs = instance
+            model_version, optimizer, batch_size, epochs = instance
 
-            model = Model(self.input_shape, model_type, get_optimizer(optimizer))
+            model = Model(self.input_shape, model_version, get_optimizer(optimizer))
             hist = model.model.fit(x_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=self.verbose,
                                    validation_data=(x_test, y_test_hot))
             # Log instance params and acc & val_acc at epoch with highest val_acc
@@ -66,9 +66,9 @@ def get_optimizer(optimizer):
 def check_params(**kwargs):
     hyperparams = dict()
     for k in kwargs.keys():
-        if k in ['type', 'optimizer', 'batch_size', 'epochs']:
+        if k in ['version', 'optimizer', 'batch_size', 'epochs']:
             hyperparams[k] = kwargs[k]
     if not len(kwargs.keys()) == 4:
-        print('Please specify type, optimizer, batch size and epochs.')
+        print('Please specify version, optimizer, batch size and epochs.')
     return hyperparams
 

@@ -1,6 +1,7 @@
 import numpy as np
 import model, utils
-
+import librosa
+import soundfile as sf
 
 class GeneticSearch:
     def __init__(self, model, filepath, epochs, nb_parents, mutation_rate,
@@ -8,11 +9,12 @@ class GeneticSearch:
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
-        self.og_label = model.predict(filepath, index=True)
+        self.og_label = model.predict(filepath)
+        self.og_label_index = model.predict(filepath, index=True)
         self.epochs = epochs
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
-        self.init_rate = 0.005
+        self.init_rate = 0.0005
         self.crossover_method = 'spc'
         self.popsize = popsize
         self.nb_genes = nb_genes
@@ -53,14 +55,15 @@ class GeneticSearch:
         else:
             genes = np.random.choice(self.nb_genes, int(self.nb_genes*self.init_rate), replace=False)
         for index in genes:
-            chromosome[index] = np.random.uniform(-1.0, 1.0)
+            chromosome[index] = chromosome[index]+np.random.uniform(-0.001, 0.001)
+            # chromosome[index] = np.random.uniform(-1.0, 1.0)
         return chromosome
 
     # Sort by lowest confidence score of initial label
     def fit_sort(self):
         scores = np.empty(self.popsize)
         for index, elem in enumerate(self.population):
-            scores[index] = self.model.get_confidence_scores(elem)[self.og_label]
+            scores[index] = self.model.get_confidence_scores(elem)[self.og_label_index]
         sorted_pop = self.population[scores.argsort()]
         sorted_pop = np.flip(sorted_pop)
         return sorted_pop
@@ -78,5 +81,8 @@ class GeneticSearch:
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
             fittest = self.get_fittest()
         winner = self.get_fittest()[0]
-        print(self.og_label)
-        print(self.model.predict_array(winner, index=True))
+        print('Initial Prediction was {}, index {}.'.format(self.og_label, self.og_label_index))
+        print('Pertubated Prediction is {}, index {}'.format(self.model.predict_array(winner),
+                                                             self.model.predict_array(winner, index=True)))
+        sf.write('unpertubated1.wav', utils.wav(self.filepath), 16000)
+        sf.write('winner1.wav', winner, 16000)

@@ -1,20 +1,26 @@
 import keras
 import numpy as np
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 
 from paths import get_labels
 from utils import wav2mfcc, array2mfcc
 
 
 class Model:
-    def __init__(self, input_shape, type=1, optimizer='Adadelta'):
+    def __init__(self, input_shape, version=1, optimizer='Adadelta'):
         self.num_classes = len(get_labels()[0])
         self.input_shape = input_shape
-        self.model = self.get_model(input_shape, type, optimizer)
+        self.model = self.get_model(input_shape, version, optimizer)
 
-    def get_model(self, input_shape, type, optimizer):
-        if type == 1:
+    def get_model(self, input_shape, version, optimizer):
+        if type(version) is str:
+            try:
+                model = load_model(version)
+            except FileNotFoundError:
+                'The chosen model does not exist yet.'
+
+        if version == 1:
             print('Simple Model chosen.')
             model = Sequential()
             model.add(Conv2D(32, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
@@ -29,7 +35,7 @@ class Model:
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-        elif type == 2:
+        elif version == 2:
             print('Complex Model chosen.')
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(2, 2), activation='relu', input_shape=input_shape))
@@ -44,7 +50,7 @@ class Model:
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-        elif type == 3:
+        elif version == 3:
             print('Experimental Model (3) chosen.')
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(8, 20), activation='relu', input_shape=input_shape))
@@ -57,7 +63,7 @@ class Model:
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-        elif type == 4:
+        elif version == 4:
             print('Experimental Model (4) chosen.')
             model = Sequential()
             model.add(Conv2D(64, kernel_size=(8, 20), activation='relu', input_shape=input_shape))
