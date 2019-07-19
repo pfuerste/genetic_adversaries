@@ -86,7 +86,7 @@ class GeneticSearch:
                 label = self.model.predict_array(winner)
                 print('Pertubated Prediction is {}, index {}'.format(label,
                                                                      self.model.predict_array(winner, index=True)))
-                utils.save_array_to_wav(out_dir, 'epoch{}_label{}.wav'.format(epoch, label))
+                utils.save_array_to_wav(out_dir, 'epoch{}_label{}.wav'.format(epoch, label), winner, 16000)
         winner = self.get_fittest()[0]
         print('Filepath: {}'.format(self.filepath))
         print('Initial Prediction was {}, index {}.'.format(self.og_label, self.og_label_index))
