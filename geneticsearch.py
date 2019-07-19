@@ -2,6 +2,7 @@ import numpy as np
 import model, utils
 import librosa
 import soundfile as sf
+import os
 
 class GeneticSearch:
     def __init__(self, model, filepath, epochs, nb_parents, mutation_rate,
