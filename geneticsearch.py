@@ -73,7 +73,7 @@ class GeneticSearch:
 
     # Tries to decrease confidence in og label
     # by applying crossover between the fittest members and mutating the offspring
-    def search(self):
+    def search(self, out_dir):
         self.population = self.init_population()
         fittest = self.get_fittest()
         for epoch in range(self.epochs):
@@ -81,8 +81,9 @@ class GeneticSearch:
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
             fittest = self.get_fittest()
         winner = self.get_fittest()[0]
+        print('Filepath: {}'.format(self.filepath))
         print('Initial Prediction was {}, index {}.'.format(self.og_label, self.og_label_index))
         print('Pertubated Prediction is {}, index {}'.format(self.model.predict_array(winner),
                                                              self.model.predict_array(winner, index=True)))
-        sf.write('unpertubated1.wav', utils.wav(self.filepath), 16000)
-        sf.write('winner1.wav', winner, 16000)
+        sf.write(os.path.join(out_dir, 'unpertubated1.wav'), utils.wav(self.filepath), 16000)
+        sf.write(os.path.join(out_dir, 'winner1.wav'), winner, 16000)

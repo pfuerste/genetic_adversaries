@@ -8,6 +8,8 @@ from utils import wav2mfcc, array2mfcc
 
 
 class Model:
+    # keras.backend.set_image_data_format('channels_last')
+
     def __init__(self, input_shape, version=1, optimizer='Adadelta'):
         self.num_classes = len(get_labels()[0])
         self.input_shape = input_shape

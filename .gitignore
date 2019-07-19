@@ -83,3 +83,5 @@ __pycache__/
 *.zip
 
 *.wav
+
+\.ipynb_checkpoints/
