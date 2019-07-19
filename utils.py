@@ -142,6 +142,6 @@ def random_pairs(number_list):
 
 def save_array_to_wav(out_dir, filename, array, sr):
     path = os.path.join(out_dir, filename)
-    if type(array) is not array:
+    if type(array) is not np.ndarray:
         array = wav(array)
     sf.write(path, array, sr)
