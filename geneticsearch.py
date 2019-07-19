@@ -74,17 +74,26 @@ class GeneticSearch:
 
     # Tries to decrease confidence in og label
     # by applying crossover between the fittest members and mutating the offspring
-    def search(self, out_dir):
+    def search(self, out_dir, verbose=0):
         self.population = self.init_population()
         fittest = self.get_fittest()
         for epoch in range(self.epochs):
             offspring = self.mate_pool(fittest)
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
             fittest = self.get_fittest()
+            if verbose == 1:
+                winner = fittest[0]
+                label = self.model.predict_array(winner)
+                print('Pertubated Prediction is {}, index {}'.format(label,
+                                                                     self.model.predict_array(winner, index=True)))
+                utils.save_array_to_wav(out_dir, 'epoch{}_label{}.wav'.format(epoch, label))
         winner = self.get_fittest()[0]
         print('Filepath: {}'.format(self.filepath))
         print('Initial Prediction was {}, index {}.'.format(self.og_label, self.og_label_index))
         print('Pertubated Prediction is {}, index {}'.format(self.model.predict_array(winner),
                                                              self.model.predict_array(winner, index=True)))
-        sf.write(os.path.join(out_dir, 'unpertubated1.wav'), utils.wav(self.filepath), 16000)
-        sf.write(os.path.join(out_dir, 'winner1.wav'), winner, 16000)
+        utils.save_array_to_wav(out_dir, 'initial.wav', self.filepath, 16000)
+        utils.save_array_to_wav(out_dir, 'final.wav', winner, 16000)
+
+        # sf.write(os.path.join(out_dir, 'unpertubated1.wav'), utils.wav(self.filepath), 16000)
+        # sf.write(os.path.join(out_dir, 'winner1.wav'), winner, 16000)

@@ -7,6 +7,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.utils import to_categorical
 import random
+import soundfile as sf
 
 from paths import get_data_path, get_labels
 
@@ -137,3 +138,10 @@ def visualize_mfcc(array):
 
 def random_pairs(number_list):
     return [number_list[i] for i in random.sample(range(len(number_list)), 2)]
+
+
+def save_array_to_wav(out_dir, filename, array, sr):
+    path = os.path.join(out_dir, filename)
+    if type(array) is not array:
+        array = wav(array)
+    sf.write(path, array, sr)
