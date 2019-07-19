@@ -42,7 +42,7 @@ class GeneticSearch:
     # Randomly selects pairs of the fittest individuals and generates the next population
     def mate_pool(self, pool):
         offspring = list()
-        parents = [utils.random_pairs(pool) for i in range(len(pool))]
+        parents = [utils.random_pairs(pool) for i in range(int(self.popsize/2))]
         # offspring = [self.crossover(*pair) for pair in parents]
         for pair in parents:
             offspring.extend(self.crossover(*pair))
@@ -66,6 +66,7 @@ class GeneticSearch:
         scores = np.empty(self.popsize)
         for index, elem in enumerate(self.population):
             scores[index] = self.model.get_confidence_scores(elem)[self.og_label_index]
+        print(scores)
         sorted_pop = self.population[scores.argsort()]
         sorted_pop = np.flip(sorted_pop)
         return sorted_pop
@@ -81,7 +82,11 @@ class GeneticSearch:
         fittest = self.get_fittest()
         for epoch in range(self.epochs):
             offspring = self.mate_pool(fittest)
+            print(np.shape(offspring))
+            print(np.shape(self.population))
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
+            print(np.shape(self.population))
+
             fittest = self.get_fittest()
             if verbose == 1:
                 winner = self.get_fittest()[0]
