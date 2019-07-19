@@ -46,6 +46,7 @@ class GeneticSearch:
         # offspring = [self.crossover(*pair) for pair in parents]
         for pair in parents:
             offspring.extend(self.crossover(*pair))
+        offspring = np.array(offspring)
         return np.array(offspring)
 
     # First Try: Mutate nb_genes*mutation_rate random genes to
@@ -65,11 +66,15 @@ class GeneticSearch:
         scores = np.empty(self.popsize)
         for index, elem in enumerate(self.population):
             scores[index] = self.model.get_confidence_scores(elem)[self.og_label_index]
+            print(np.sum(elem))
+            print(self.model.get_confidence_scores(elem)[self.og_label_index])
+        #print(np.sum(scores))
         sorted_pop = self.population[scores.argsort()]
         sorted_pop = np.flip(sorted_pop)
         return sorted_pop
 
     def get_fittest(self):
+        #print(np.sum(self.fit_sort()[:self.nb_parents]))
         return self.fit_sort()[:self.nb_parents]
 
     # Tries to decrease confidence in og label
@@ -86,7 +91,7 @@ class GeneticSearch:
                 label = self.model.predict_array(winner)
                 print('Pertubated Prediction is {}, index {}'.format(label,
                                                                      self.model.predict_array(winner, index=True)))
-                utils.save_array_to_wav(out_dir, 'epoch{}_label{}.wav'.format(epoch, label), winner, 16000)
+                utils.save_array_to_wav(out_dir, 'epoch{}_{}.wav'.format(epoch, label), winner, 16000)
         winner = self.get_fittest()[0]
         print('Filepath: {}'.format(self.filepath))
         print('Initial Prediction was {}, index {}.'.format(self.og_label, self.og_label_index))

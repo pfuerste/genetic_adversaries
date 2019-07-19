@@ -20,4 +20,4 @@ model = model.Model((40, 98, 1), 'testm.h5')
 geneticsearch = geneticsearch.GeneticSearch(model=model, filepath=path,
                                            epochs=10, nb_parents=4, mutation_rate=0.0015,
                                            popsize=8)
-geneticsearch.search('.', verbose=1)
+geneticsearch.search('.', verbose=0)
