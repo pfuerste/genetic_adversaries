@@ -66,11 +66,11 @@ class GeneticSearch:
         scores = np.empty(self.popsize)
         for index, elem in enumerate(self.population):
             scores[index] = self.model.get_confidence_scores(elem)[self.og_label_index]
-        print(scores)
-        print(scores.argsort())
         print(np.flip(scores.argsort()))
+        print(np.sum(self.population))
         sorted_pop = self.population[scores.argsort()]
         sorted_pop = np.flip(sorted_pop)
+        print(np.sum(sorted_pop))
         return sorted_pop
 
     def get_fittest(self):
