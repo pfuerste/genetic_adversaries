@@ -18,6 +18,6 @@ model = model.Model((40, 98, 1), 'testm.h5')
 #print(model.model.evaluate(x=X_test, y=y_test_hot))
 #print(model.model.metrics_names)
 geneticsearch = geneticsearch.GeneticSearch(model=model, filepath=path,
-                                           epochs=10, nb_parents=4, mutation_rate=0.0015,
+                                           epochs=100, nb_parents=4, mutation_rate=0.0015,
                                            popsize=8)
 geneticsearch.search('.', verbose=0)
