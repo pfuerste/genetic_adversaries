@@ -80,9 +80,7 @@ class Model:
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
 
-        model.compile(loss=keras.losses.categorical_crossentropy,
-                      optimizer=keras.optimizers.Adadelta(),
-                      metrics=['accuracy'])
+
 
         return model
 
