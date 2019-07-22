@@ -11,7 +11,9 @@ tf.set_random_seed(0)
 
 X_train, X_test, y_train, y_test = utils.get_train_test(path=paths.get_data_path(), input_shape=(40, 98, 1))
 X_train, X_test, y_train_hot, y_test_hot = utils.reshape_data((40, 98, 1), X_train, X_test, y_train, y_test)
-print(np.shape(X_train))
+print(np.shape(X_train), np.shape(y_train))
+print(np.max(y_train))
+
 #model = model.Model((40, 98, 1), 2)
 #model.model.fit(X_train, y_train_hot, batch_size=64, epochs=1, verbose=1, validation_data=(X_test, y_test_hot))
 #model.model.save('model2.h5')

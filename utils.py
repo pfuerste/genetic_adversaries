@@ -77,7 +77,7 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
 
     assert X.shape[0] == len(y)
 
-    return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=False)
+    return train_test_split(X, y, test_size=(1 - split_ratio), random_state=random_state, shuffle=True)
 
 
 def reshape_data(input_shape, x_train, x_test, y_train, y_test):
