@@ -81,7 +81,6 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
 
 
 def reshape_data(input_shape, x_train, x_test, y_train, y_test):
-    print(x_train.reshape)
     x_train = x_train.reshape(x_train.shape[0], input_shape[0], input_shape[1], input_shape[2])
     x_test = x_test.reshape(x_test.shape[0], input_shape[0], input_shape[1], input_shape[2])
 

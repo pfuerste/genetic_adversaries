@@ -11,7 +11,7 @@ class GeneticSearch:
         self.filepath = filepath
         self.wav = utils.wav(filepath)
         self.og_label = model.predict(filepath)
-        self.og_label_index = model.predict(filepath, index=True)
+        self.og_index = model.predict(filepath, index=True)
         self.epochs = epochs
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
@@ -23,7 +23,6 @@ class GeneticSearch:
 
     # Set up an initial population of slightly mutated wav-arrays
     def init_population(self):
-        #population = np.vstack([self.wav]*self.popsize)
         population = np.empty([self.popsize, self.nb_genes])
         for index in range(self.popsize):
             chromosome = self.mutate(self.wav, init=True)
@@ -43,7 +42,6 @@ class GeneticSearch:
     def mate_pool(self, pool):
         offspring = list()
         parents = [utils.random_pairs(pool) for i in range(int(self.popsize/2))]
-        # offspring = [self.crossover(*pair) for pair in parents]
         for pair in parents:
             offspring.extend(self.crossover(*pair))
         offspring = np.array(offspring)
@@ -58,48 +56,83 @@ class GeneticSearch:
             genes = np.random.choice(self.nb_genes, int(self.nb_genes*self.init_rate), replace=False)
         for index in genes:
             chromosome[index] = chromosome[index]+np.random.uniform(-0.001, 0.001)
-            # chromosome[index] = np.random.uniform(-1.0, 1.0)
         return chromosome
 
-    # Sort by lowest confidence score of initial label
-    def fit_sort(self):
+    # Sort by lowest confidence score of initial label / highest  score for target label
+    def fit_sort(self, target_label=None):
         scores = np.empty(self.popsize)
         for index, elem in enumerate(self.population):
-            scores[index] = self.model.get_confidence_scores(elem)[self.og_label_index]
-        sorted_pop = self.population[scores.argsort()]
-        sorted_pop = np.flip(sorted_pop)
+            if target_label is None:
+                scores[index] = self.model.get_confidence_scores(elem)[self.og_index]
+            else:
+                scores[index] = self.model.get_confidence_scores(elem)[target_label]
+        if target_label is not None:
+            scores = np.flip(scores.argsort(), 0)
+        else:
+            scores = scores.argsort()
+        sorted_pop = self.population[scores]
+
         return sorted_pop
 
-    def get_fittest(self):
-        #print(np.sum(self.fit_sort()[:self.nb_parents]))
-        return self.fit_sort()[:self.nb_parents]
+    def get_fittest(self, target_label=None):
+        return self.fit_sort(target_label)[:self.nb_parents]
 
     # Tries to decrease confidence in og label
     # by applying crossover between the fittest members and mutating the offspring
-    def search(self, out_dir, verbose=0):
+    def search(self, out_dir):
         self.population = self.init_population()
         fittest = self.get_fittest()
         for epoch in range(self.epochs):
             offspring = self.mate_pool(fittest)
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
-
             fittest = self.get_fittest()
-            if verbose == 1:
-                winner = self.get_fittest()[0]
-                print('sum of epoch {} winner: {}'.format(epoch, np.sum(winner)))
-                label = self.model.predict_array(winner)
-                print('Pertubated Prediction is {}, index {}'.format(label,
-                                                                     self.model.predict_array(winner, index=True)))
-                #utils.save_array_to_wav(out_dir, 'epoch{}_{}.wav'.format(epoch, label), winner, 16000)
-                sf.write('epoch{}_{}.wav'.format(epoch, label), winner, 16000)
+            winner = fittest[0]
+            winner_label, winner_index = self.model.predict_array(winner)
+            if winner_index != self.og_index:
+                print('Changed prediction from {} to {} in {} epochs.'.format(self.og_label, winner_label, epoch))
+                utils.save_array_to_wav(out_dir, 'epoch_0_{}.wav'.format(self.og_label), self.filepath, 16000)
+                utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
+                print('Aborting.')
+                return None
+        print('Failed to produce adversarial example with the given parameters.')
 
-        winner = self.get_fittest()[0]
-        print('Filepath: {}'.format(self.filepath))
-        print('Initial Prediction was {}, index {}.'.format(self.og_label, self.og_label_index))
-        print('Pertubated Prediction is {}, index {}'.format(self.model.predict_array(winner),
-                                                             self.model.predict_array(winner, index=True)))
-        utils.save_array_to_wav(out_dir, 'initial.wav', self.filepath, 16000)
-        utils.save_array_to_wav(out_dir, 'final.wav', winner, 16000)
 
-        # sf.write(os.path.join(out_dir, 'unpertubated1.wav'), utils.wav(self.filepath), 16000)
-        # sf.write(os.path.join(out_dir, 'winner1.wav'), winner, 16000)
+    # maximizes the confidence in a chosen label
+    def targeted_search(self, target_label, out_dir, verbose=0):
+        self.population = self.init_population()
+        fittest = self.get_fittest(target_label)
+        for epoch in range(self.epochs):
+            offspring = self.mate_pool(fittest)
+            self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
+            fittest = self.get_fittest(target_label)
+            winner = fittest[0]
+            winner_label, winner_index = self.model.predict_array(winner)
+            if winner_index != self.og_index:
+                print('Changed prediction from {} to {} in {} epochs.'.format(self.og_label, winner_label, epoch))
+                utils.save_array_to_wav(out_dir, 'epoch_0_{}.wav'.format(self.og_label), self.filepath, 16000)
+                utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
+                print('Aborting.')
+                return None
+        print('Failed to produce adversarial example with the given parameters.')
+
+
+
+
+    # 3 Utility functions for testng purposes
+    def just_add(self, chromosome):
+        genes = np.random.choice(self.nb_genes, int(self.nb_genes*self.mutation_rate), replace=False)
+        for index in genes:
+            chromosome[index] = chromosome[index]+0.1
+            # chromosome[index] = np.random.uniform(-1.0, 1.0)
+        return chromosome
+
+    def just_random(self, chromosome):
+        genes = np.random.choice(self.nb_genes, int(self.nb_genes*self.mutation_rate), replace=False)
+        for index in genes:
+            chromosome[index] = np.random.uniform(-1.0, 1.0)
+            # chromosome[index] = np.random.uniform(-1.0, 1.0)
+        return chromosome
+
+    def random_chromosome(self):
+        chromosome = np.random.uniform(-1.0, 1.0, 16000)
+        return chromosome

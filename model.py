@@ -3,15 +3,15 @@ import numpy as np
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from keras.models import Sequential, load_model
 
-from paths import get_labels
+from paths import get_labels, get_data_path, get_small_path
 from utils import wav2mfcc, array2mfcc
 
 
 class Model:
     # keras.backend.set_image_data_format('channels_last')
 
-    def __init__(self, input_shape, version=1, optimizer='Adadelta'):
-        self.num_classes = len(get_labels()[0])
+    def __init__(self, input_shape, version=1, optimizer='Adadelta', path=get_data_path()):
+        self.num_classes = len(get_labels(path)[0])
         self.input_shape = input_shape
         self.model = self.get_model(input_shape, version, optimizer)
 
@@ -55,9 +55,11 @@ class Model:
         elif version == 3:
             print('Experimental Model (3) chosen.')
             model = Sequential()
-            model.add(Conv2D(64, kernel_size=(8, 20), activation='relu', input_shape=input_shape))
+            model.add(Conv2D(64, kernel_size=(4, 4), activation='relu', input_shape=input_shape))
+            model.add(Conv2D(128, kernel_size=(2, 2), activation='relu'))
+            model.add(Conv2D(32, kernel_size=(2, 2), activation='relu'))
             model.add(Dropout(0.25))
-            model.add(MaxPooling2D(pool_size=(3, 1)))
+            model.add(MaxPooling2D(pool_size=(2, 2)))
             model.add(Conv2D(64, kernel_size=(4, 10), activation='relu'))
             model.add(Flatten())
             model.add(Dense(32, activation='relu'))
@@ -79,8 +81,6 @@ class Model:
             model.add(Dense(128, activation='relu'))
             model.add(Dropout(0.4))
             model.add(Dense(self.num_classes, activation='softmax'))
-
-
 
         return model
 
@@ -106,15 +106,11 @@ class Model:
 
     # In: wav_array
     # Out: label index
-    def predict_array(self, array, index=False):
+    def predict_array(self, array):
         sample = array2mfcc(array, input_shape=self.input_shape)
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
-        if not index:
-            return get_labels()[0][
-                    np.argmax(self.model.predict(sample_reshaped))
-            ]
-        else:
-            return get_labels()[1][
-                np.argmax(self.model.predict(sample_reshaped))
-            ]
+
+        label = get_labels()[0][np.argmax(self.model.predict(sample_reshaped))]
+        index = get_labels()[1][np.argmax(self.model.predict(sample_reshaped))]
+        return label, index

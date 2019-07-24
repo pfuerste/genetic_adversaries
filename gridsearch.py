@@ -3,17 +3,18 @@ import itertools
 import keras.optimizers
 import numpy as np
 from utils import get_train_test, reshape_data
-from paths import get_dummy_path
+from paths import get_dummy_path, get_small_path
 
 
 class GridSearch:
-    def __init__(self, input_shape, verbose=1, **kwargs):
+    def __init__(self, path, input_shape, verbose=1, **kwargs):
         self.input_shape = input_shape
         self.verbose = verbose
         self.hist = dict()
         self.hyperparams = check_params(**kwargs)
         self.permutations = self.get_perm()
-        self.data = reshape_data(input_shape, *get_train_test(input_shape=input_shape))
+        self.path = path
+        self.data = reshape_data(input_shape, *get_train_test(path=path, input_shape=input_shape))
 
     def get_perm(self):
         array = list(self.hyperparams.values())
@@ -30,7 +31,7 @@ class GridSearch:
         for index, instance in enumerate(self.permutations):
             model_version, optimizer, batch_size, epochs = instance
 
-            model = Model(self.input_shape, model_version, get_optimizer(optimizer))
+            model = Model(self.input_shape, model_version, get_optimizer(optimizer), self.path)
             hist = model.model.fit(x_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=self.verbose,
                                    validation_data=(x_test, y_test_hot))
             # Log instance params and acc & val_acc at epoch with highest val_acc
@@ -72,3 +73,10 @@ def check_params(**kwargs):
         print('Please specify version, optimizer, batch size and epochs.')
     return hyperparams
 
+
+if __name__ == "__main__":
+
+    search = GridSearch(get_small_path(), (40, 98, 1), type=[2, 3, 4], optimizer=['adadelta'], batch_size=[32, 64], epochs=[10])
+    search.search()
+    search.get_log()
+    search.get_best_run()

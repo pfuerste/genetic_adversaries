@@ -14,6 +14,15 @@ def get_data_path():
         return path
 
 
+def get_small_path():
+    if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
+        path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'small_data')
+        return path
+    else:
+        path = os.path.join('.', 'small_data')
+        return path
+
+
 def get_dummy_path():
     if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
         path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'dummydata')
