@@ -12,6 +12,7 @@ class GeneticSearch:
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
+        self.fourier = None
         self.og_label = model.predict(filepath)
         self.og_index = model.predict(filepath, index=True)
         self.epochs = epochs
@@ -25,6 +26,8 @@ class GeneticSearch:
         self.conf_scores = None
         # TODO: Momentum for temperature (>1: softer softmax, more parents)
         self.temp = temp
+        self.alpha = 0.9
+        self.beta = 0.000001
 
     # Set up an initial population of slightly mutated wav-arrays
     def init_population(self):
@@ -50,13 +53,15 @@ class GeneticSearch:
 
     # Mutates by randomly changing popsize*mutation_rate genes within a certain frequency range
     # of a given chromosome by a small random value
-    def mutate_fourier(self, array, range=[0, 10], init=False):
-        fourier = utils.pad_fourier(array)
-        fourier[:1][:] = fourier[:1][:] + np.random.uniform(-100.0, 100.0)
-        fourier[10:][:] = fourier[10:][:] + np.random.uniform(-500.0, 500.0)
-        y_out = librosa.util.fix_length(librosa.istft(fourier, hop_length=512), 16000)
-        ifourier = librosa.istft(fourier)
-        #print(np.shape(ifourier))
+    def mutate_fourier(self, array):
+        if self.fourier is None:
+            self.fourier = utils.pad_fourier(array)
+        for gene in range(int(self.nb_genes * self.mutation_rate)):
+            xloc = np.random.randint(0, 300)
+            yloc = np.random.randint(0, 31)
+            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, 0.5, 1)
+        ifourier = librosa.util.fix_length(librosa.istft(self.fourier, hop_length=512), 16000)
+        #self.fourier = librosa.istft(self.fourier)
         return ifourier
 
 
@@ -122,13 +127,14 @@ class GeneticSearch:
     # Tries to decrease confidence in og label
     # by applying crossover between the fittest members and mutating the offspring
     def search(self, out_dir):
-        self.population, scores = self.get_fittest()
+        self.fourier = None
+        self.population, scores = self.fit_sort()
         for epoch in range(self.epochs):
             print(self.model.get_confidence_scores(self.population[0])[self.og_index])
             offspring = self.strongest_mate(self.population)
             #offspring = self.mate_pool(self.population, scores)
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
-            self.population, scores = self.get_fittest()
+            self.population, scores = self.fit_sort()
             winner = self.population[0]
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index != self.og_index:
@@ -142,15 +148,19 @@ class GeneticSearch:
 
     # Maximizes the confidence in a chosen label
     def targeted_search(self, target_label, out_dir):
-        self.population, scores = self.get_fittest(target_label)
+        self.fourier = None
+        self.population, old_scores = self.fit_sort(target_label)
         for epoch in range(self.epochs):
-            #print(self.model.get_confidence_scores(self.population[0])[target_label])
+            #print('Best Score: ', old_scores[0])
+            print('Mutation Rate: ', self.mutation_rate)
             offspring = self.strongest_mate(self.population)
             #offspring = self.mate_pool(self.population, scores)
-            #self.population = np.array([self.mutate(chromosome, epoch) for chromosome in offspring])
-            #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
-            self.population, scores = self.get_fittest(target_label)
+            #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
+            self.population, new_scores = self.fit_sort(target_label)
+            self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
+            print('Score diff: ', np.abs(old_scores-new_scores))
+            old_scores = new_scores
             winner = self.population[0]
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index == target_label:
@@ -162,6 +172,10 @@ class GeneticSearch:
         print('Failed to produce adversarial example with the given parameters.')
 
 
+    def get_mutation_rate(self, old, new):
+        p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
+        #print(self.beta/np.abs(old-new))
+        return p_new
 
 
     # Utility functions for testng purposes

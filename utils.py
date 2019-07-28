@@ -144,6 +144,16 @@ def visualize_mfcc(array):
     plt.show()
 
 
+def visualize_stf(array):
+    librosa.display.specshow(librosa.amplitude_to_db(array,
+                                                  ref=np.max),
+                                                    y_axis='log', x_axis='time')
+    plt.title('Power spectrogram')
+    plt.colorbar(format='%+2.0f dB')
+    plt.tight_layout()
+    plt.show()
+
+
 # Compare arrays of original and attacker
 def compare_wavs(original, attacker):
     sr = 16000
