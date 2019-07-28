@@ -8,14 +8,14 @@ from utils import wav2mfcc, array2mfcc
 
 
 class Model:
-    # keras.backend.set_image_data_format('channels_last')
 
-    def __init__(self, input_shape, version=1, optimizer='Adadelta', path=get_data_path()):
+    def __init__(self, input_shape, version=1, path=get_small_path()):
         self.num_classes = len(get_labels(path)[0])
         self.input_shape = input_shape
-        self.model = self.get_model(input_shape, version, optimizer)
+        self.path = path
+        self.model = self.get_model(input_shape, version)
 
-    def get_model(self, input_shape, version, optimizer):
+    def get_model(self, input_shape, version):
         if type(version) is str:
             try:
                 model = load_model(version)
@@ -90,11 +90,11 @@ class Model:
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
         if not index:
-            return get_labels()[0][
+            return get_labels(self.path)[0][
                     np.argmax(self.model.predict(sample_reshaped))
             ]
         else:
-            return get_labels()[1][
+            return get_labels(self.path)[1][
                 np.argmax(self.model.predict(sample_reshaped))
             ]
 
@@ -111,6 +111,6 @@ class Model:
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
 
-        label = get_labels()[0][np.argmax(self.model.predict(sample_reshaped))]
-        index = get_labels()[1][np.argmax(self.model.predict(sample_reshaped))]
+        label = get_labels(self.path)[0][np.argmax(self.model.predict(sample_reshaped))]
+        index = get_labels(self.path)[1][np.argmax(self.model.predict(sample_reshaped))]
         return label, index

@@ -56,6 +56,14 @@ def array2mfcc(array, input_shape):
     return mfcc
 
 
+def pad_fourier(array):
+    n = len(array)
+    y_pad = np.pad(array, [0, np.mod(n, 512)], mode='constant')
+    padded_fourier = librosa.stft(y_pad, hop_length=512)
+    #assert np.shape(padded_fourier) == (16128,)
+    return padded_fourier
+
+
 def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.7, random_state=42):
     # Get available labels
     labels, indices, _ = get_labels(path)
@@ -132,6 +140,17 @@ def visualize_mfcc(array):
     librosa.display.specshow(mfcc, x_axis='time')
     plt.colorbar()
     plt.title('MFCC')
+    plt.tight_layout()
+    plt.show()
+
+
+# Compare arrays of original and attacker
+def compare_wavs(original, attacker):
+    sr = 16000
+    plt.subplot(3, 1, 3)
+    librosa.display.waveplot(original, sr=sr, color='b', alpha=1)
+    librosa.display.waveplot(attacker, sr=sr, color='r', alpha=1)
+    plt.title('Original vs Attacker')
     plt.tight_layout()
     plt.show()
 

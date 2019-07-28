@@ -46,7 +46,6 @@ def get_labels(path=get_data_path()):
             pass
 
     label_indices = np.arange(0, len(labels))
-
     return labels, label_indices, to_categorical(label_indices)
 
 
