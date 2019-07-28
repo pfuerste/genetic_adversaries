@@ -59,8 +59,8 @@ path = paths.pick_random_sample(path=paths.get_small_path())
 #utils.compare_wavs( utils.wav(os.path.join('test_out', files[0])), utils.wav(os.path.join('test_out', files[1])))
 for target in range(0,9):
     gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
-                                                epochs=10, nb_parents=8, mutation_rate=0.005,
-                                                popsize=50)
+                                                epochs=100, nb_parents=8, mutation_rate=0.005,
+                                                popsize=20)
 
     gensearch.targeted_search(target, 'test_out')
 #geneticsearch.search('test_out')

@@ -5,10 +5,11 @@ import soundfile as sf
 import os
 import paths
 import scipy.special
+import sklearn.preprocessing as skp
 
 class GeneticSearch:
-    def __init__(self, model, filepath, epochs, nb_parents, mutation_rate,
-                 popsize, nb_genes=16000, temp=1.0):
+    def __init__(self, model, filepath, epochs, nb_parents, popsize,
+                 mutation_rate=0.001, nb_genes=16000, temp=0.01):
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
@@ -40,26 +41,22 @@ class GeneticSearch:
     # TODO momentum / scaling
     # Mutates by randomly changing popsize*mutation_rate genes of a given chromosome by a small random value
     def mutate(self, chromosome, init=False):
-        if not init:
-            genes = np.random.choice(self.nb_genes, int(self.nb_genes * self.mutation_rate), replace=False)
-            for index in genes:
-                chromosome[index] = chromosome[index] + np.random.uniform(-0.001, 0.001)
-        else:
-            genes = np.random.choice(self.nb_genes, int(self.nb_genes * self.init_rate), replace=False)
-            for index in genes:
-                chromosome[index] = chromosome[index] + np.random.uniform(-0.005, 0.005)
-        return chromosome
+        rate = self.init_rate if init else self.mutation_rate
+        mask = np.random.rand(self.nb_genes) < self.mutation_rate
+        new_chromosome = chromosome + mask*np.random.normal(0, rate)
+        return new_chromosome
 
 
     # Mutates by randomly changing popsize*mutation_rate genes within a certain frequency range
     # of a given chromosome by a small random value
-    def mutate_fourier(self, array):
+    def mutate_fourier(self, array, init=False):
+        rate = self.init_rate if init else self.mutation_rate
         if self.fourier is None:
             self.fourier = utils.pad_fourier(array)
         for gene in range(int(self.nb_genes * self.mutation_rate)):
             xloc = np.random.randint(0, 200)
             yloc = np.random.randint(0, 31)
-            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, 0.01, 1)
+            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, rate, 1)
         ifourier = librosa.util.fix_length(librosa.istft(self.fourier, hop_length=512), 16000)
         #self.fourier = librosa.istft(self.fourier)
         return ifourier
@@ -85,8 +82,8 @@ class GeneticSearch:
     # Mates pairs of parents drawn from the pool based on a weighted probability
     def mate_pool(self, pool, scores):
         probs = scipy.special.softmax(scores/self.temp)
-        par1 = np.random.choice(self.popsize, self.popsize/2, replace=True, p=probs)
-        par2 = np.random.choice(self.popsize, self.popsize/2, replace=True, p=probs)
+        par1 = np.random.choice(self.popsize, int(self.popsize/2), replace=True, p=probs)
+        par2 = np.random.choice(self.popsize, int(self.popsize/2), replace=True, p=probs)
         parents = np.stack([par1, par2], axis=1)
         parents = [[self.population[pair[0]], self.population[pair[1]]] for pair in parents]
         offspring = [self.crossover(*pair) for pair in parents]
@@ -116,6 +113,7 @@ class GeneticSearch:
         else:
             sort_scores = scores.argsort()
         sorted_pop = self.population[sort_scores]
+        scores = scipy.special.expit(scores)
         return sorted_pop, scores
 
 
@@ -152,14 +150,17 @@ class GeneticSearch:
         self.fourier = None
         self.population, old_scores = self.fit_sort(target_label)
         for epoch in range(self.epochs):
-            #print('Best Score: ', old_scores[0])
+            if epoch%100==0:
+                print('Best Score: ', old_scores[0])
             #print('Mutation Rate: ', self.mutation_rate)
+            #if epoch < 50:
             offspring = self.strongest_mate(self.population)
-            #offspring = self.mate_pool(self.population, scores)
+            #offspring = self.mate_pool(self.population, old_scores)
+            if epoch < 10: self.population = np.array([self.mutate_fourier(chromosome, init=True) for chromosome in offspring])
             self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             self.population, new_scores = self.fit_sort(target_label)
-            self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
+            #self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
             #print('Score diff: ', np.abs(old_scores-new_scores))
             old_scores = new_scores
             winner = self.population[0]
