@@ -57,9 +57,9 @@ class GeneticSearch:
         if self.fourier is None:
             self.fourier = utils.pad_fourier(array)
         for gene in range(int(self.nb_genes * self.mutation_rate)):
-            xloc = np.random.randint(0, 300)
+            xloc = np.random.randint(0, 200)
             yloc = np.random.randint(0, 31)
-            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, 0.1, 1)
+            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, 0.01, 1)
         ifourier = librosa.util.fix_length(librosa.istft(self.fourier, hop_length=512), 16000)
         #self.fourier = librosa.istft(self.fourier)
         return ifourier
@@ -170,14 +170,14 @@ class GeneticSearch:
                 utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
                 return None
-        utils.save_array_to_wav(out_dir, 'fail_{}.wav'.format(epoch, winner_label), winner, 16000)
+        utils.save_array_to_wav(out_dir, '{}_fail_{}.wav'.format(old_scores[0], winner_label), winner, 16000)
         print('Failed to produce adversarial example with the given parameters.')
 
 
     def get_mutation_rate(self, old, new):
         p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
-        if p_new > self.mutation_rate*3: p_new = self.mutation_rate*3
-        if p_new > 1.0: p_new = 1.0
+        if p_new > self.mutation_rate*2: p_new = self.mutation_rate*2
+        if p_new > 0.01: p_new = 0.01
         return p_new
 
 
