@@ -14,7 +14,6 @@ tf.set_random_seed(0)
 input_shape = (40, 98, 1)
 model_file = 'model3.h5'
 model_path = os.path.join('models', 'small', model_file)
-model = Model(input_shape, model_path)
 
 '''
 X_train, X_test, y_train, y_test = get_train_test(path=paths.get_small_path(), input_shape=input_shape)
@@ -60,8 +59,8 @@ path = paths.pick_random_sample(path=paths.get_small_path())
 #utils.compare_wavs( utils.wav(os.path.join('test_out', files[0])), utils.wav(os.path.join('test_out', files[1])))
 for target in range(0,9):
     gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
-                                                epochs=100, nb_parents=8, mutation_rate=0.005,
-                                                popsize=70)
+                                                epochs=10, nb_parents=8, mutation_rate=0.005,
+                                                popsize=50)
 
     gensearch.targeted_search(target, 'test_out')
 #geneticsearch.search('test_out')

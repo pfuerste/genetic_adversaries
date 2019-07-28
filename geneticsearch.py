@@ -59,7 +59,7 @@ class GeneticSearch:
         for gene in range(int(self.nb_genes * self.mutation_rate)):
             xloc = np.random.randint(0, 300)
             yloc = np.random.randint(0, 31)
-            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, 0.5, 1)
+            self.fourier[-xloc][yloc] = self.fourier[-xloc][yloc] + np.random.normal(0.0, 0.1, 1)
         ifourier = librosa.util.fix_length(librosa.istft(self.fourier, hop_length=512), 16000)
         #self.fourier = librosa.istft(self.fourier)
         return ifourier
@@ -130,7 +130,7 @@ class GeneticSearch:
         self.fourier = None
         self.population, scores = self.fit_sort()
         for epoch in range(self.epochs):
-            print(self.model.get_confidence_scores(self.population[0])[self.og_index])
+            #print(self.model.get_confidence_scores(self.population[0])[self.og_index])
             offspring = self.strongest_mate(self.population)
             #offspring = self.mate_pool(self.population, scores)
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
@@ -143,6 +143,7 @@ class GeneticSearch:
                 utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
                 return None
+        utils.save_array_to_wav(out_dir, 'fail_{}.wav'.format(epoch, winner_label), winner, 16000)
         print('Failed to produce adversarial example with the given parameters.')
 
 
@@ -152,14 +153,14 @@ class GeneticSearch:
         self.population, old_scores = self.fit_sort(target_label)
         for epoch in range(self.epochs):
             #print('Best Score: ', old_scores[0])
-            print('Mutation Rate: ', self.mutation_rate)
+            #print('Mutation Rate: ', self.mutation_rate)
             offspring = self.strongest_mate(self.population)
             #offspring = self.mate_pool(self.population, scores)
-            self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
+            self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             self.population, new_scores = self.fit_sort(target_label)
             self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
-            print('Score diff: ', np.abs(old_scores-new_scores))
+            #print('Score diff: ', np.abs(old_scores-new_scores))
             old_scores = new_scores
             winner = self.population[0]
             winner_label, winner_index = self.model.predict_array(winner)
@@ -169,12 +170,14 @@ class GeneticSearch:
                 utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
                 return None
+        utils.save_array_to_wav(out_dir, 'fail_{}.wav'.format(epoch, winner_label), winner, 16000)
         print('Failed to produce adversarial example with the given parameters.')
 
 
     def get_mutation_rate(self, old, new):
         p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
-        #print(self.beta/np.abs(old-new))
+        if p_new > self.mutation_rate*3: p_new = self.mutation_rate*3
+        if p_new > 1.0: p_new = 1.0
         return p_new
 
 
