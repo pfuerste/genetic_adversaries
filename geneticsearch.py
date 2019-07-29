@@ -6,10 +6,17 @@ import os
 import paths
 import scipy.special
 import sklearn.preprocessing as skp
+from scipy.signal import butter, lfilter
+
+
+def highpass_filter(data, cutoff=7000, fs=16000, order=10):
+    b, a = butter(order, cutoff / (0.5 * fs), btype='high', analog=False)
+    return lfilter(b, a, data)
+
 
 class GeneticSearch:
     def __init__(self, model, filepath, epochs, nb_parents, popsize,
-                 mutation_rate=0.001, nb_genes=16000, temp=0.01):
+                 mutation_rate=0.005, nb_genes=16000, temp=0.01):
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
@@ -20,6 +27,7 @@ class GeneticSearch:
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
         self.init_rate = 0.005
+        self.noise_std = 0.01
         self.crossover_method = 'spc'
         self.popsize = popsize
         self.nb_genes = nb_genes
@@ -42,8 +50,10 @@ class GeneticSearch:
     # Mutates by randomly changing popsize*mutation_rate genes of a given chromosome by a small random value
     def mutate(self, chromosome, init=False):
         rate = self.init_rate if init else self.mutation_rate
+        noise = np.random.randn(self.nb_genes)*self.noise_std
         mask = np.random.rand(self.nb_genes) < self.mutation_rate
-        new_chromosome = chromosome + mask*np.random.normal(0, rate)
+        noisemask = highpass_filter(mask*noise)
+        new_chromosome = chromosome + noisemask
         return new_chromosome
 
 
@@ -156,11 +166,11 @@ class GeneticSearch:
             #if epoch < 50:
             offspring = self.strongest_mate(self.population)
             #offspring = self.mate_pool(self.population, old_scores)
-            if epoch < 10: self.population = np.array([self.mutate_fourier(chromosome, init=True) for chromosome in offspring])
-            self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
+            if epoch < 1: self.population = np.array([self.mutate(chromosome, init=True) for chromosome in offspring])
+            self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
             #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             self.population, new_scores = self.fit_sort(target_label)
-            #self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
+            self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
             #print('Score diff: ', np.abs(old_scores-new_scores))
             old_scores = new_scores
             winner = self.population[0]
@@ -178,8 +188,10 @@ class GeneticSearch:
     def get_mutation_rate(self, old, new):
         p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
         if p_new > self.mutation_rate*2: p_new = self.mutation_rate*2
-        if p_new > 0.01: p_new = 0.01
+        if p_new > 0.001: p_new = 0.001
+        #print(p_new)
         return p_new
+
 
 
     # Utility functions for testng purposes

@@ -51,16 +51,31 @@ utils.save_array_to_wav('test_out', 'padded_tft.wav', y, 16000)
 
 files = os.listdir('test_out')
 utils.compare_wavs( utils.wav(os.path.join('test_out', files[0])), utils.wav(os.path.join('test_out', files[1])))
+
+
+
+#utils.compare_stft(utils.wav(os.path.join('test_out', 'epoch_0_up.wav')),utils.wav(os.path.join('test_out', 'epoch_228_down.wav')))
+
+#files = os.listdir('test_out')
+#for file in files:
+#wav = utils.wav(os.path.join('test_out', 'epoch_0_up.wav'))
+
+sum = np.empty(16000)
+    for _ in range(1000):
+        sum = gensearch.mutate(sum)
+    utils.compare_stft(utils.wav(os.path.join('test_out', 'epoch_0_up.wav')), sum)
+
+
+utils.compare_wavs(utils.wav(os.path.join('test_out', 'epoch_0_on.wav')), utils.wav(os.path.join('test_out', 'epoch_181_down.wav')))
+utils.compare_stft(utils.wav(os.path.join('test_out', 'epoch_0_on.wav')), utils.wav(os.path.join('test_out', 'epoch_181_down.wav')))
 '''
 model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
 path = paths.pick_random_sample(path=paths.get_small_path())
 
-#files = os.listdir('test_out')
-#utils.compare_wavs( utils.wav(os.path.join('test_out', files[0])), utils.wav(os.path.join('test_out', files[1])))
-for target in range(0,9):
+for target in range(0, 9):
     gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
-                                                epochs=100, nb_parents=8, mutation_rate=0.005,
-                                                popsize=20)
+                                            epochs=1000, nb_parents=12,
+                                            popsize=50)
 
     gensearch.targeted_search(target, 'test_out')
-#geneticsearch.search('test_out')
+    #geneticsearch.search('test_out')

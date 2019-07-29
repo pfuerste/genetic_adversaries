@@ -37,7 +37,7 @@ def wav2mfcc(file_path, input_shape):
     return mfcc
 
 
-def array2mfcc(array, input_shape):
+def array2mfcc(array, input_shape=(40, 98, 1)):
     n_mfcc = input_shape[0]
     max_len = input_shape[1]
     wave = array
@@ -155,12 +155,50 @@ def visualize_stf(array):
 
 
 # Compare arrays of original and attacker
-def compare_wavs(original, attacker):
+def compare_wavs(original, attacker, range=[-0.7, 0.7]):
     sr = 16000
-    plt.subplot(3, 1, 3)
-    librosa.display.waveplot(original, sr=sr, color='b', alpha=1)
+    comp = plt.subplot(211)
+    librosa.display.waveplot(original, sr=sr, alpha=1)
     librosa.display.waveplot(attacker, sr=sr, color='r', alpha=1)
-    plt.title('Original vs Attacker')
+    plt.title('Original vs Attacker ')
+    comp.set_ylim(range)
+    noise = plt.subplot(212)
+    librosa.display.waveplot(original - attacker, sr=sr)
+    plt.title('Original minus Attacker ')
+    noise.set_ylim(-0.7, 0.7)
+    plt.tight_layout()
+    plt.show()
+
+
+def compare_mfccs(original, attacker, range=[-0.7, 0.7]):
+    original = array2mfcc(original)
+    attacker = array2mfcc(attacker)
+    ogplt = plt.subplot(311)
+    librosa.display.specshow(original, x_axis='original')
+    atplt = plt.subplot(312)
+    librosa.display.specshow(attacker, x_axis='attacker')
+    noiseplt = plt.subplot(313)
+    librosa.display.specshow(original-attacker, x_axis='noise')
+    plt.tight_layout()
+    plt.show()
+
+
+def compare_stft(original, attacker, range=[-0.7, 0.7]):
+    original = np.abs(librosa.stft(original))
+    attacker = np.abs(librosa.stft(attacker))
+    ogplt = plt.subplot(311)
+    librosa.display.specshow(librosa.amplitude_to_db(original, ref=np.max), y_axis='log', x_axis='time')
+    plt.colorbar()
+    plt.title('Original Spectogram')
+    atplt = plt.subplot(312)
+    librosa.display.specshow(librosa.amplitude_to_db(attacker, ref=np.max), y_axis='log', x_axis='time')
+    plt.colorbar()
+    plt.title('Attackers Spectogram')
+    noiseplt = plt.subplot(313)
+    librosa.display.specshow(librosa.amplitude_to_db(original, ref=np.max) + librosa.amplitude_to_db(attacker, ref=np.max)
+                             , y_axis='log', x_axis='time')
+    plt.colorbar()
+    plt.title('Pertubation Spectogram')
     plt.tight_layout()
     plt.show()
 
