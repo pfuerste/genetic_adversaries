@@ -85,18 +85,18 @@ class Model:
         return model
 
     # Predicts one filepath
-    def predict(self, filepath, index=False):
+    def predict(self, filepath):
         sample = wav2mfcc(filepath, input_shape=self.input_shape)
         sample_reshaped = sample.reshape(1, self.input_shape[0],
                                          self.input_shape[1], self.input_shape[2])
-        if not index:
-            return get_labels(self.path)[0][
+
+        label = get_labels(self.path)[0][
                     np.argmax(self.model.predict(sample_reshaped))
             ]
-        else:
-            return get_labels(self.path)[1][
+        index = get_labels(self.path)[1][
                 np.argmax(self.model.predict(sample_reshaped))
             ]
+        return label, index
 
     def get_confidence_scores(self, array):
         sample = array2mfcc(array, input_shape=self.input_shape)

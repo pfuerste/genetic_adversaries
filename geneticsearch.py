@@ -16,18 +16,17 @@ def highpass_filter(data, cutoff=7000, fs=16000, order=10):
 
 class GeneticSearch:
     def __init__(self, model, filepath, epochs, nb_parents, popsize,
-                 mutation_rate=0.005, nb_genes=16000, temp=0.01):
+                 mutation_rate=0.001, nb_genes=16000, temp=0.01):
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
         self.fourier = None
-        self.og_label = model.predict(filepath)
-        self.og_index = model.predict(filepath, index=True)
+        self.og_label, self.og_index = model.predict(filepath)
         self.epochs = epochs
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
-        self.init_rate = 0.005
-        self.noise_std = 0.01
+        self.init_rate = 0.001
+        self.noise_std = 0.001
         self.crossover_method = 'spc'
         self.popsize = popsize
         self.nb_genes = nb_genes
@@ -53,6 +52,7 @@ class GeneticSearch:
         noise = np.random.randn(self.nb_genes)*self.noise_std
         mask = np.random.rand(self.nb_genes) < self.mutation_rate
         noisemask = highpass_filter(mask*noise)
+        #noisemask = mask*noise
         new_chromosome = chromosome + noisemask
         return new_chromosome
 
@@ -135,28 +135,38 @@ class GeneticSearch:
     # Tries to decrease confidence in og label
     # by applying crossover between the fittest members and mutating the offspring
     def search(self, out_dir):
+        utils.save_array_to_wav(out_dir, 'initial_{}.wav'.format(self.og_label), self.filepath, 16000)
         self.fourier = None
-        self.population, scores = self.fit_sort()
+        self.population, old_scores = self.fit_sort()
         for epoch in range(self.epochs):
-            #print(self.model.get_confidence_scores(self.population[0])[self.og_index])
+            if epoch % 100 == 0:
+                print('Best Score: ', old_scores[0])
+            # print('Mutation Rate: ', self.mutation_rate)
+            # if epoch < 50:
             offspring = self.strongest_mate(self.population)
-            #offspring = self.mate_pool(self.population, scores)
+            # offspring = self.mate_pool(self.population, old_scores)
+            # if epoch < 5: self.population = self.noise_std = 0.05
+            # else: self.noise_std = 0.01
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
-            self.population, scores = self.fit_sort()
+            # self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
+            self.population, new_scores = self.fit_sort()
+            self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
+            # print('Score diff: ', np.abs(old_scores-new_scores))
+            old_scores = new_scores
             winner = self.population[0]
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index != self.og_index:
                 print('Changed prediction from {} to {} in {} epochs.'.format(self.og_label, winner_label, epoch))
-                utils.save_array_to_wav(out_dir, 'epoch_0_{}.wav'.format(self.og_label), self.filepath, 16000)
                 utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
                 return None
-        utils.save_array_to_wav(out_dir, 'fail_{}.wav'.format(epoch, winner_label), winner, 16000)
+        utils.save_array_to_wav(out_dir, '{}_fail_{}.wav'.format(old_scores[0], winner_label), winner, 16000)
         print('Failed to produce adversarial example with the given parameters.')
 
 
     # Maximizes the confidence in a chosen label
     def targeted_search(self, target_label, out_dir):
+        utils.save_array_to_wav(out_dir, 'initial_{}.wav'.format(self.og_label), self.filepath, 16000)
         self.fourier = None
         self.population, old_scores = self.fit_sort(target_label)
         for epoch in range(self.epochs):
@@ -166,7 +176,8 @@ class GeneticSearch:
             #if epoch < 50:
             offspring = self.strongest_mate(self.population)
             #offspring = self.mate_pool(self.population, old_scores)
-            if epoch < 1: self.population = np.array([self.mutate(chromosome, init=True) for chromosome in offspring])
+            #if epoch < 5: self.population = self.noise_std = 0.05
+            #else: self.noise_std = 0.01
             self.population = np.array([self.mutate(chromosome) for chromosome in offspring])
             #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             self.population, new_scores = self.fit_sort(target_label)
@@ -177,7 +188,6 @@ class GeneticSearch:
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index == target_label:
                 print('Changed prediction from {} to {} in {} epochs.'.format(self.og_label, winner_label, epoch))
-                utils.save_array_to_wav(out_dir, 'epoch_0_{}.wav'.format(self.og_label), self.filepath, 16000)
                 utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
                 return None
@@ -188,7 +198,7 @@ class GeneticSearch:
     def get_mutation_rate(self, old, new):
         p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
         if p_new > self.mutation_rate*2: p_new = self.mutation_rate*2
-        if p_new > 0.001: p_new = 0.001
+        if p_new > 0.01: p_new = 0.01
         #print(p_new)
         return p_new
 
