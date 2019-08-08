@@ -4,19 +4,26 @@ import numpy as np
 import os
 
 
-out_dir = os.path.join('test_out', 'SimBA', 'run1')
+out_dir = os.path.join('test_out', 'SimBA')
 
 
 class SimBA:
-    def __init__(self, model, path):
+    def __init__(self, model, path, id, eps=0.0005):
         self.model = model
         self.path = path
         self.ini_wav, self.sr = librosa.load(self.path, mono=True, sr=None)
         self.wav = np.copy(self.ini_wav)
         self.budget = 16000
         self.queries = 0
-        self.eps = 0.001
+        self.eps = eps
         self.ini_class = None
+        self.id = id
+        self.targeted = False
+
+    def reset_instance(self):
+        self.targeted = False
+        self.queries = 0
+        self.wav = self.ini_wav
 
     def print_log(self):
         ini_class = self.model.predict_array(self.ini_wav)[0]
@@ -30,7 +37,10 @@ class SimBA:
               .format(self.queries, self.eps))
 
     def get_id(self, label):
-        return '{}_{}q_{}eps.wav'.format(label, self.queries, self.eps)
+        if self.targeted:
+            return 'targeted_{}id_{}_{}q_{}eps.wav'.format(self.id, label, self.queries, self.eps)
+        else:
+            return '{}id_{}_{}q_{}eps.wav'.format(self.id, label, self.queries, self.eps)
 
     def save_attack(self, label):
         if not os.path.isdir(out_dir):
@@ -59,10 +69,11 @@ class SimBA:
             if epoch % 1000 == 0:
                 print('Epoch {}, initial class probability: {}'.format(epoch, probs[ini_index]))
                 print('Ini label {}, label now {}'.format(self.ini_class, (self.model.predict_array(self.wav)[0])))
-                print(probs[ini_index], np.max(probs))
             if probs[ini_index] < np.max(probs):
+                print(probs[ini_index], np.max(probs))
                 self.save_attack(self.model.predict_array(self.wav)[0])
                 self.print_log()
+                self.reset_instance()
                 return None
             q = np.random.choice(Q)
             Q = np.delete(Q, np.argwhere(Q == q))
@@ -79,8 +90,10 @@ class SimBA:
                 self.queries += 2
         self.save_attack('FAILURE'+self.model.predict_array(self.wav)[0])
         self.print_log()
+        self.reset_instance()
 
     def targeted_attack(self, target_label):
+        self.targeted = True
         Q = np.arange(self.sr)
         self.ini_class, ini_index = self.model.predict(self.path)
         self.save_attack(self.ini_class)
@@ -92,6 +105,7 @@ class SimBA:
             if np.float(probs[ini_index]) < np.float(probs[target_label]):
                 self.save_attack(self.model.predict_array(self.wav)[0])
                 self.print_log()
+                self.reset_instance()
                 return None
             q = np.random.choice(Q)
             Q = np.delete(Q, np.argwhere(Q == q))
@@ -108,4 +122,4 @@ class SimBA:
                 self.queries += 2
         self.save_attack('FAILURE' + self.model.predict_array(self.wav)[0])
         self.print_log()
-
+        self.reset_instance()

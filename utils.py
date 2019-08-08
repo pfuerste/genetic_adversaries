@@ -71,7 +71,7 @@ def get_train_test(path=get_data_path(), input_shape=(40, 98, 1), split_ratio=0.
     # Getting first arrays
     if input_shape == (40, 98, 1): vec_dir = os.path.join(path, 'mfcc_vectors_40x98')
     elif input_shape == (98, 40 , 1): vec_dir = os.path.join(path, 'mfcc_vectors_98x40')
-    else: vec_dir = os.path.join(path, 'mfcc_vectors')
+    else: vec_dir = os.path.join(path, 'mfcc_vectors_13x100')
     print('Loading .npy data from {}'.format(vec_dir))
 
     # Load data of first label
@@ -158,8 +158,8 @@ def visualize_stf(array):
 def compare_wavs(original, attacker, range=[-0.7, 0.7]):
     sr = 16000
     comp = plt.subplot(211)
-    librosa.display.waveplot(original, sr=sr, alpha=1)
-    librosa.display.waveplot(attacker, sr=sr, color='r', alpha=1)
+    librosa.display.waveplot(attacker, sr=sr, color='b', alpha=1.0)
+    librosa.display.waveplot(original, sr=sr, color='y', alpha=1.0)
     plt.title('Original vs Attacker ')
     comp.set_ylim(range)
     noise = plt.subplot(212)
@@ -170,36 +170,55 @@ def compare_wavs(original, attacker, range=[-0.7, 0.7]):
     plt.show()
 
 
-def compare_mfccs(original, attacker, range=[-0.7, 0.7]):
-    original = array2mfcc(original)
-    attacker = array2mfcc(attacker)
-    ogplt = plt.subplot(311)
-    librosa.display.specshow(original, x_axis='original')
-    atplt = plt.subplot(312)
-    librosa.display.specshow(attacker, x_axis='attacker')
-    noiseplt = plt.subplot(313)
-    librosa.display.specshow(original-attacker, x_axis='noise')
-    plt.tight_layout()
+# TODO: check if complex difference (original - attacker) is valid
+def compare_mfccs(original, attacker, input_shape, range=[-0.7, 0.7]):
+    original = array2mfcc(original, input_shape=input_shape)
+    attacker = array2mfcc(attacker, input_shape=input_shape)
+    fig = plt.figure()
+    ogplt = fig.add_subplot(311)
+    ogplt.yaxis.tick_right()
+    librosa.display.specshow(original)
+    plt.title('Original Spectogram')
+    cbar_ax = fig.add_axes([0.03, 0.1, 0.03, 0.8])
+    cbar = plt.colorbar(ax = ogplt, cax=cbar_ax)
+    atplt = fig.add_subplot(312)
+    atplt.yaxis.tick_right()
+    librosa.display.specshow(attacker)
+    plt.title('Attackers Spectogram')
+    noiseplt = fig.add_subplot(313)
+    noiseplt.yaxis.tick_right()
+    librosa.display.specshow(original-attacker)
+    plt.title('Pertubation Spectogram')
+    cbar_ax2 = fig.add_axes([0.88, 0.1, 0.03, 0.8])
+    cbar2 = plt.colorbar(ax=noiseplt, cax=cbar_ax2)
+    fig.subplots_adjust(bottom=0.1, right=0.8, top=0.9, hspace=0.4)
     plt.show()
 
 
 def compare_stft(original, attacker, range=[-0.7, 0.7]):
     original = np.abs(librosa.stft(original))
     attacker = np.abs(librosa.stft(attacker))
-    ogplt = plt.subplot(311)
-    librosa.display.specshow(librosa.amplitude_to_db(original, ref=np.max), y_axis='log', x_axis='time')
-    plt.colorbar()
+
+    fig = plt.figure()
+    ogplt = fig.add_subplot(311)
+    ogplt.yaxis.tick_right()
+    librosa.display.specshow(librosa.amplitude_to_db(original, ref=np.max), y_axis='log')
     plt.title('Original Spectogram')
-    atplt = plt.subplot(312)
-    librosa.display.specshow(librosa.amplitude_to_db(attacker, ref=np.max), y_axis='log', x_axis='time')
-    plt.colorbar()
+    cbar_ax = fig.add_axes([0.03, 0.1, 0.03, 0.8])
+    cbar = plt.colorbar(cax=cbar_ax)
+    atplt = fig.add_subplot(312)
+    atplt.yaxis.tick_right()
+    librosa.display.specshow(librosa.amplitude_to_db(attacker, ref=np.max), y_axis='log')
     plt.title('Attackers Spectogram')
-    noiseplt = plt.subplot(313)
-    librosa.display.specshow(librosa.amplitude_to_db(original, ref=np.max) + librosa.amplitude_to_db(attacker, ref=np.max)
+    noiseplt = fig.add_subplot(313)
+    noiseplt.yaxis.tick_right()
+    librosa.display.specshow(librosa.amplitude_to_db(original, ref=np.max) -
+                             librosa.amplitude_to_db(attacker, ref=np.max)
                              , y_axis='log', x_axis='time')
-    plt.colorbar()
     plt.title('Pertubation Spectogram')
-    plt.tight_layout()
+    cbar_ax2 = fig.add_axes([0.88, 0.1, 0.03, 0.8])
+    cbar = plt.colorbar(cax=cbar_ax2)
+    fig.subplots_adjust(bottom=0.1, right=0.8, top=0.9, hspace=0.4)
     plt.show()
 
 

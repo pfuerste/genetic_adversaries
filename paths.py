@@ -38,7 +38,7 @@ def get_labels(path=get_data_path()):
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
 
     non_labels = ['mfcc_vectors_40x98', 'mfcc_vectors_98x40', 'mfcc_vectors', 'mfcc_vectors_big',
-                  'mfcc_vectors_big2', 'spec_vectors', '_background_noise_' ]
+                  'mfcc_vectors_13x100', 'mfcc_vectors_big2', 'spec_vectors', '_background_noise_' ]
     for non_label in non_labels:
         try:
             labels.remove(non_label)
