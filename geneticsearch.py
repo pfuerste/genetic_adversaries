@@ -17,7 +17,7 @@ def highpass_filter(data, cutoff=7000, fs=16000, order=10):
 class GeneticSearch:
     def __init__(self, model, filepath, epochs,  popsize, nb_parents=8,
                  mutation_rate=0.001, noise_std=0.005):
-        self.out_dir = os.path.join('test_out', 'gen', str(mutation_rate))
+        self.out_dir = paths.get_out_dir(mutation_rate, mode='gen')
         self.runid = self.get_runid()
         self.queries = 0
         self.model = model

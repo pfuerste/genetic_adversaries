@@ -13,7 +13,7 @@ class SimBA:
         self.budget = 16000
         self.queries = 0
         self.eps = eps
-        self.out_dir = os.path.join('test_out', 'SimBA', str(eps))
+        self.out_dir = paths.get_out_dir(eps, mode='SimBA')
         self.ini_class = None
         self.runid = self.get_runid()
         self.targeted = False

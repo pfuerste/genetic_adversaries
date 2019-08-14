@@ -5,6 +5,14 @@ import numpy as np
 from keras.utils import to_categorical
 
 
+def get_out_dir(rate, mode):
+    if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
+        path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'test_out', mode, str(rate))
+    else:
+        path = os.path.join('test_out', mode, str(rate))
+    return path
+
+
 def get_data_path():
     if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
         path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'data')
