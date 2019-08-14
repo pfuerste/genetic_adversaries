@@ -32,6 +32,7 @@ class GeneticSearch:
         self.mutation_rate = mutation_rate
         self.init_rate = 0.005
         self.noise_std = noise_std
+        self.popsize = popsize
         self.nb_genes = 16000
         self.population = self.init_population()
         self.save_attack(None, 'ORIGINAL_' + self.ini_class)
