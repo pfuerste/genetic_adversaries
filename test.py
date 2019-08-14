@@ -9,8 +9,8 @@ import os
 from utils import get_train_test, reshape_data
 import scipy
 import simba
-tf.set_random_seed(0)
 
+tf.set_random_seed(0)
 
 '''
 input_shape = (13, 100, 1)
@@ -73,13 +73,6 @@ for file in files:
 
         #utils.compare_stft(utils.wav(os.path.join('test_out', 'epoch_0_up.wav')),utils.wav(os.path.join('test_out', 'epoch_228_down.wav')))
 
-for target in range(0,1):
-    gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
-                                            epochs=3000, nb_parents=12,
-                                            popsize=50)
-
-    #gensearch.targeted_search(target, os.path.join('test_out', '3000epochs_noGE'))
-    gensearch.search(os.path.join('test_out', 'untargeted0'))
 
 
 sum = np.empty(16000)
@@ -92,29 +85,50 @@ _, files = os.walk(os.path.join('test_out', 'SimBA'))
 
 utils.compare_wavs(utils.wav(os.path.join('test_out', files[0])), utils.wav(os.path.join('test_out', files[1])))
 utils.compare_stft(utils.wav(os.path.join('test_out', files[0])), utils.wav(os.path.join('test_out', files[1])))
-'''
-input_shape = (13, 100, 1)
-model_file = 'model3_13x100'
-model_path = os.path.join('models', 'small', model_file)
-model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
-path = paths.pick_random_sample(path=paths.get_small_path())
-for label in range(0, 9):
-    sim = simba.SimBA(model=model, path=path, id=0)
-    sim.targeted_attack(label)
-    sim.attack()
-'''
 
-dir = r'test_out\SimBA\run5'
+
+dir = r"test_out\SimBA"
 files = os.listdir(dir)
 og = files[0]
-files.remove(og)
+#files.remove(og)
+
 for file in files:
-    utils.compare_wavs(utils.wav(os.path.join(dir, og)),
+    print(np.corrcoef(utils.wav(os.path.join(dir, og)), utils.wav(os.path.join(dir, file))))
+
+
+utils.compare_wavs(utils.wav(os.path.join(dir, og)),
                        utils.wav(os.path.join(dir, file)), range=[-1.3, 1.3])
     utils.compare_stft(utils.wav(os.path.join(dir, og)),
                        utils.wav(os.path.join(dir, file)), range=[-1.3, 1.3])
     utils.compare_mfccs(utils.wav(os.path.join(dir, og)),
                        utils.wav(os.path.join(dir, file)), range=[-1.3, 1.3], input_shape=(13, 100))
 
+
+
+
+eps = [0.0125, 0.015]
+for ep in eps:
+    print('starting ep {}.'.format(ep))
+    for random in range(20):
+        path = paths.pick_random_sample(path=paths.get_small_path())
+        sim = simba.SimBA(model=model, path=path, eps=ep)
+        for label in range(0, 10):
+            if label == 0:
+                sim.attack()
+            sim.targeted_attack(label)
+    print('ep {} done.'.format(ep))
 '''
-#fileutils.save_data_to_array([13, 100], path=paths.get_small_path())
+input_shape = (13, 100, 1)
+model_file = 'model3_13x100'
+model_path = os.path.join('models', 'small', model_file)
+model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
+
+for target in range(0,2):
+    path = paths.pick_random_sample(path=paths.get_small_path())
+    gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
+                                            epochs=1000, nb_parents=12,
+                                            popsize=50)
+
+    for _ in range(5):
+        gensearch.targeted_search(np.random.randint(0, 9))
+#    gensearch.search()

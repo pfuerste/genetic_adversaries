@@ -15,37 +15,68 @@ def highpass_filter(data, cutoff=7000, fs=16000, order=10):
 
 
 class GeneticSearch:
-    def __init__(self, model, filepath, epochs, nb_parents, popsize,
-                 mutation_rate=0.001, nb_genes=16000, temp=0.01):
+    def __init__(self, model, filepath, epochs,  popsize, nb_parents=8,
+                 mutation_rate=0.001, noise_std=0.005):
+        self.out_dir = os.path.join('test_out', 'gen', str(mutation_rate))
+        self.runid = self.get_runid()
+        self.queries = 0
         self.model = model
         self.filepath = filepath
         self.wav = utils.wav(filepath)
+        self.ini_wav = self.wav
         self.fourier = None
-        self.og_label, self.og_index = model.predict(filepath)
+        self.ini_class, self.ini_index = model.predict(filepath)
+        self.ini_prob = self.model.get_confidence_scores(self.ini_wav)[self.ini_index]
         self.epochs = epochs
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
-        self.init_rate = 0.001
-        self.noise_std = 0.001
-        self.crossover_method = 'spc'
-        self.popsize = popsize
-        self.nb_genes = nb_genes
+        self.init_rate = 0.005
+        self.noise_std = noise_std
+        self.nb_genes = 16000
         self.population = self.init_population()
-        self.conf_scores = None
+        self.save_attack(None, 'ORIGINAL_' + self.ini_class)
+
         # TODO: Momentum for temperature (>1: softer softmax, more parents)
-        self.temp = temp
+        self.temp = 0.01
         self.alpha = 0.9
         self.beta = 0.000001
+
+    def reset_instance(self):
+        self.targeted = False
+        self.queries = 0
+        self.wav = self.ini_wav
+        self.init_population()
+
+    def get_runid(self):
+        try:
+            files = os.listdir(self.out_dir)
+            ids = [int(elem.split('id')[0]) for elem in files]
+            return np.max(ids)+1
+        except (ValueError, FileNotFoundError) as error:
+            return 0
+
+    def get_saveid(self, target, label):
+        if target == None:
+            return '{}id_{}_label_{}q_{}std_{}ip.wav'.format(self.runid, label, self.queries, self.noise_std, self.ini_prob)
+        else:
+            return '{}id_{}target_{}_label_{}q_{}std_{}ip.wav'.format(self.runid, target, label, self.queries,
+                                                                      self.noise_std, self.ini_prob)
+
+    def save_attack(self, target, label):
+        if not os.path.isdir(self.out_dir):
+            os.mkdir(self.out_dir)
+        utils.save_array_to_wav(self.out_dir, self.get_saveid(target, label), self.wav, self.nb_genes)
 
     # Set up an initial population of slightly mutated wav-arrays
     def init_population(self):
         population = np.empty([self.popsize, self.nb_genes])
         for index in range(self.popsize):
-            chromosome = self.mutate(self.wav, init=True)
+            chromosome = self.mutate(self.ini_wav, init=True)
             population[index] = chromosome
         return population
 
-    # TODO momentum / scaling
+    #TODO this method + save_id
+
     # Mutates by randomly changing popsize*mutation_rate genes of a given chromosome by a small random value
     def mutate(self, chromosome, init=False):
         rate = self.init_rate if init else self.mutation_rate
@@ -55,7 +86,6 @@ class GeneticSearch:
         #noisemask = mask*noise
         new_chromosome = chromosome + noisemask
         return new_chromosome
-
 
     # Mutates by randomly changing popsize*mutation_rate genes within a certain frequency range
     # of a given chromosome by a small random value
@@ -71,23 +101,12 @@ class GeneticSearch:
         #self.fourier = librosa.istft(self.fourier)
         return ifourier
 
-
     # Generates a child for a pair of chromosomes
     def crossover(self, par1, par2):
-        if self.crossover_method == 'spc':
-            crossover_point = np.random.randint(0, self.nb_genes-1)
-            ch1 = np.concatenate((par1[:crossover_point], par2[crossover_point:]))
-            ch2 = np.concatenate((par2[:crossover_point], par1[crossover_point:]))
-        else:
-            raise NotImplementedError
+        crossover_point = np.random.randint(0, self.nb_genes-1)
+        ch1 = np.concatenate((par1[:crossover_point], par2[crossover_point:]))
+        ch2 = np.concatenate((par2[:crossover_point], par1[crossover_point:]))
         return ch1, ch2
-
-
-    # TODO: implement Mutation Momentum
-    # def momentum(self):
-
-    # TODO: (Maybe) implement gradient estimation
-
 
     # Mates pairs of parents drawn from the pool based on a weighted probability
     def mate_pool(self, pool, scores):
@@ -100,43 +119,36 @@ class GeneticSearch:
         offspring = np.concatenate(np.array(offspring))
         return offspring
 
-
     # Randomly selects pairs of the nb_parents fittest individuals and generates the next population
-    def strongest_mate(self, pool, nb_parents=8):
-        parents = [utils.random_pairs(pool[:nb_parents]) for i in range(int(self.popsize/2))]
+    def strongest_mate(self, pool):
+        parents = [utils.random_pairs(pool[:self.nb_parents]) for i in range(int(self.popsize/2))]
         offspring = [self.crossover(*pair) for pair in parents]
         offspring = np.concatenate(np.array(offspring))
         return offspring
-
 
     # Sort by lowest confidence score of initial label / highest  score for target label
     def fit_sort(self, target_label=None):
         scores = np.empty(self.popsize)
         for index, elem in enumerate(self.population):
             if target_label is None:
-                scores[index] = self.model.get_confidence_scores(elem)[self.og_index]
+                scores[index] = self.model.get_confidence_scores(elem)[self.ini_index]
             else:
                 scores[index] = self.model.get_confidence_scores(elem)[target_label]
+        self.queries += len(self.population)
         if target_label is not None:
             sort_scores = np.flip(scores.argsort(), 0)
             scores = np.flip(np.sort(scores), 0)
         else:
             sort_scores = scores.argsort()
         sorted_pop = self.population[sort_scores]
-        scores = scipy.special.expit(scores)
+        #scores = scipy.special.expit(scores)
         return sorted_pop, scores
 
 
-    # TODO: delete?
-    def get_fittest(self, target_label=None):
-        return self.fit_sort(target_label)
-
-
-    # Tries to decrease confidence in og label
+    # TODO change saving scheme: '{}id_{}target_{}_label_{}q_{}ip.wav'
+    # Tries to decrease confidence in ini label
     # by applying crossover between the fittest members and mutating the offspring
-    def search(self, out_dir):
-        utils.save_array_to_wav(out_dir, 'initial_{}.wav'.format(self.og_label), self.filepath, 16000)
-        self.fourier = None
+    def search(self):
         self.population, old_scores = self.fit_sort()
         for epoch in range(self.epochs):
             if epoch % 100 == 0:
@@ -155,23 +167,26 @@ class GeneticSearch:
             old_scores = new_scores
             winner = self.population[0]
             winner_label, winner_index = self.model.predict_array(winner)
-            if winner_index != self.og_index:
-                print('Changed prediction from {} to {} in {} epochs.'.format(self.og_label, winner_label, epoch))
-                utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
+            if winner_index != self.ini_index:
+                print('Changed prediction from {} to {} in {} epochs.'.format(self.ini_class, winner_label, epoch))
+                self.save_attack(None, winner_label)
+                #utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, self.nb_genes)
                 print('Aborting.')
+                self.reset_instance()
                 return None
-        utils.save_array_to_wav(out_dir, '{}_fail_{}.wav'.format(old_scores[0], winner_label), winner, 16000)
+        self.save_attack(None, 'FAIL_'+winner_label)
+        self.reset_instance()
+        #utils.save_array_to_wav(out_dir, '{}_fail_{}.wav'.format(old_scores[0], winner_label), winner, self.nb_genes)
         print('Failed to produce adversarial example with the given parameters.')
 
 
     # Maximizes the confidence in a chosen label
-    def targeted_search(self, target_label, out_dir):
-        utils.save_array_to_wav(out_dir, 'initial_{}.wav'.format(self.og_label), self.filepath, 16000)
-        self.fourier = None
+    def targeted_search(self, target_label):
         self.population, old_scores = self.fit_sort(target_label)
         for epoch in range(self.epochs):
             if epoch%100==0:
                 print('Best Score: ', old_scores[0])
+
             #print('Mutation Rate: ', self.mutation_rate)
             #if epoch < 50:
             offspring = self.strongest_mate(self.population)
@@ -182,25 +197,41 @@ class GeneticSearch:
             #self.population = np.array([self.mutate_fourier(chromosome) for chromosome in offspring])
             self.population, new_scores = self.fit_sort(target_label)
             self.mutation_rate = self.get_mutation_rate(old_scores[0], new_scores[0])
-            #print('Score diff: ', np.abs(old_scores-new_scores))
             old_scores = new_scores
             winner = self.population[0]
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index == target_label:
-                print('Changed prediction from {} to {} in {} epochs.'.format(self.og_label, winner_label, epoch))
-                utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
+                print('Changed prediction from {} to {} in {} epochs.'.format(self.ini_class, winner_label, epoch))
+                self.save_attack(target_label, winner_label)
+                #utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
+                self.reset_instance()
                 return None
-        utils.save_array_to_wav(out_dir, '{}_fail_{}.wav'.format(old_scores[0], winner_label), winner, 16000)
+        self.save_attack(target_label, winner_label)
+        self.reset_instance()
         print('Failed to produce adversarial example with the given parameters.')
 
 
     def get_mutation_rate(self, old, new):
-        p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
-        if p_new > self.mutation_rate*2: p_new = self.mutation_rate*2
-        if p_new > 0.01: p_new = 0.01
-        #print(p_new)
-        return p_new
+        if old == new:
+            return 0
+        else:
+            p_new = self.alpha*self.mutation_rate+(self.beta/np.abs(old-new))
+            if p_new > self.mutation_rate*2: p_new = self.mutation_rate*2
+            if p_new > 0.01: p_new = 0.01
+            #print(p_new)
+            return p_new
+
+
+
+
+
+
+
+
+
+
+
 
 
 
