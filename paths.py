@@ -82,6 +82,7 @@ def rename_fails(dir):
             if 'ORIGINAL' in elem:
                 curr_original = elem
                 original_label = curr_original.split('ORIGINAL_')[1].split('_label')[0]
+
         for elem in curr_list:
             if 'FAIL' in elem:
                 elem_label = elem.split('FAIL_')[1].split('_label')[0]
@@ -93,6 +94,21 @@ def rename_fails(dir):
                         new_file = str(elem.split('FAIL_')[0]+elem.split('FAIL_')[1])
                         print('renaming {} to {}'.format(os.path.join(dir, elem), os.path.join(dir, new_file)))
                         os.rename(os.path.join(dir, elem), os.path.join(dir, new_file))
+            if 'FAIL' not in elem:
+                if 'target' in elem:
+                    elem_label = elem.split('target_')[1].split('_label')[0]
+                    target_label = labels[int(elem.split('target')[0].split('_')[1])]
+                    if target_label == original_label:
+                        print(os.path.join(dir, elem))
+                        os.remove(os.path.join(dir, elem))
+                    if target_label != elem_label:
+                        print('Wrong label: {} and {} from {}'.format(elem, target_label,
+                                                                      curr_original))
+                        new_file = str(elem.split('id_')[0] + 'id_FAIL_' + elem.split('id_')[1])
+                        print('renaming {} to {}'.format(os.path.join(dir, elem),
+                                                         os.path.join(dir, new_file)))
+                        os.rename(os.path.join(dir, elem), os.path.join(dir, new_file))
+
         curr_list = list()
         curr_original = None
         original_label = None

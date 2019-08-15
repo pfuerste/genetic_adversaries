@@ -12,6 +12,11 @@ import simba
 
 
 
+'''
+from pathlib import Path
+for p in pathtocheck:
+    paths.rename_fails(p)
+
 input_shape = (13, 100, 1)
 epochs = 50
 batch_size = 64
@@ -40,7 +45,7 @@ print(model.model.metrics_names)
 #np.random.seed(42)
 #path = paths.pick_random_sample(path=paths.get_small_path())
 #print(path)
-'''
+
 path = r'.\small_data\stop\f92e49f3_nohash_2.wav'
 y = utils.wav(path)
 n = len(y)
@@ -66,9 +71,11 @@ new = librosa.istft(ft)
 #print(scipy.spatial.distance.euclidean(y, y_out))
 
 utils.save_array_to_wav('test_out', 'padded_tft.wav', y, 16000)
-pathtocheck =
-for p in pathtocheck:
-    paths.rename_fails(p)
+
+
+
+
+
 
 files = os.listdir('test_out')
 for file in files:
@@ -120,7 +127,7 @@ for ep in eps:
             sim.targeted_attack(label)
     print('ep {} done.'.format(ep))
 
-
+'''
 input_shape = (13, 100, 1)
 model_file = 'model3_13x100'
 model_path = os.path.join('models', 'small', model_file)
@@ -137,4 +144,4 @@ for pa in range(5):
         if target==0:
           gensearch.search()
         gensearch.targeted_search(target)
-'''
+

@@ -16,7 +16,7 @@ def highpass_filter(data, cutoff=7000, fs=16000, order=10):
 
 class GeneticSearch:
     def __init__(self, model, filepath, epochs,  popsize, nb_parents=8,
-                 mutation_rate=0.001, noise_std=0.005):
+                 mutation_rate=0.005, noise_std=0.0075):
         self.out_dir = paths.get_out_dir(mutation_rate, mode='gen')
         self.runid = self.get_runid()
         self.queries = 0
@@ -30,7 +30,7 @@ class GeneticSearch:
         self.epochs = epochs
         self.nb_parents = nb_parents
         self.mutation_rate = mutation_rate
-        self.init_rate = 0.005
+        self.init_rate = 0.01
         self.noise_std = noise_std
         self.popsize = popsize
         self.nb_genes = 16000
@@ -170,11 +170,13 @@ class GeneticSearch:
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index != self.ini_index:
                 print('Changed prediction from {} to {} in {} epochs.'.format(self.ini_class, winner_label, epoch))
+                self.wav = winner
                 self.save_attack(None, winner_label)
                 #utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, self.nb_genes)
                 print('Aborting.')
                 self.reset_instance()
                 return None
+        self.wav = winner
         self.save_attack(None, 'FAIL_'+winner_label)
         self.reset_instance()
         #utils.save_array_to_wav(out_dir, '{}_fail_{}.wav'.format(old_scores[0], winner_label), winner, self.nb_genes)
@@ -206,11 +208,13 @@ class GeneticSearch:
             winner_label, winner_index = self.model.predict_array(winner)
             if winner_index == target_label:
                 print('Changed prediction from {} to {} in {} epochs.'.format(self.ini_class, winner_label, epoch))
+                self.wav = winner
                 self.save_attack(target_label, winner_label)
                 #utils.save_array_to_wav(out_dir, 'epoch_{}_{}.wav'.format(epoch, winner_label), winner, 16000)
                 print('Aborting.')
                 self.reset_instance()
                 return None
+        self.wav = winner
         self.save_attack(target_label, 'FAIL_'+winner_label)
         self.reset_instance()
         print('Failed to produce adversarial example with the given parameters.')
