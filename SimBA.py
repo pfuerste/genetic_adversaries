@@ -122,7 +122,7 @@ class SimBA:
             #    print('Epoch {}, initial class probability: {}, target class probability: {}'
             #          .format(epoch, probs[self.ini_index], probs[target_label]))
             if np.float(probs[self.ini_index]) < np.float(probs[target_label]):
-                self.save_attack(target_label, 'FAIL_' + self.model.predict_array(self.wav)[0], deltas)
+                self.save_attack(target_label, self.model.predict_array(self.wav)[0], deltas)
                 self.print_log()
                 self.reset_instance()
                 return None

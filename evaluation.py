@@ -1,13 +1,12 @@
 import numpy as np
-import matplotlib
+import matplotlib.pyplot as plt
 import os
 from utils import wav
 
 
 class Evaluation:
-    def __init__(self, eps=[0.01, 0.005, 0.0075], mode='SimBA'):
+    def __init__(self, mode='SimBA'):
         self.mode = mode
-        self.eps = eps
         self.sim_dir = get_dir('SimBA')
         self.gen_dir = get_dir('gen')
         self.sim_data = self.get_data('SimBA')
@@ -16,7 +15,8 @@ class Evaluation:
     def get_data(self, mode):
         data = dict()
         dir = self.gen_dir if mode == 'gen' else self.sim_dir
-        for val in self.eps:
+        eps = [float(i) for i in os.listdir(dir)]
+        for val in eps:
             data[val] = dict()
             ep_path = os.path.join(dir, str(val))
             try:
@@ -87,9 +87,15 @@ def get_suc_rate(dic):
     except ZeroDivisionError:
         return 0
 
+
+def simple_plot(x, y):
+    plt.plot(x, y)
+
+#def heatmap():
 #TODO analyze deltas
 
 
 eval = Evaluation()
-og, tar, ntar = sort_status(eval.sim_data[0.005])
-print(get_suc_rate(tar), get_suc_rate(ntar))
+for ep in eval.sim_data:
+    og, tar, ntar = sort_status(eval.sim_data[ep])
+    print('success rate for ep {}: \ntargeted: {}\nnon-targeted: {}'.format(ep, get_suc_rate(tar), get_suc_rate(ntar)))

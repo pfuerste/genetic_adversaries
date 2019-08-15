@@ -10,9 +10,8 @@ from utils import get_train_test, reshape_data
 import scipy
 import simba
 
-tf.set_random_seed(0)
 
-'''
+
 input_shape = (13, 100, 1)
 epochs = 50
 batch_size = 64
@@ -20,8 +19,9 @@ verbose = 1
 num_classes = 10
 X_train, X_test, y_train, y_test = get_train_test(path=paths.get_small_path(), input_shape=input_shape)
 X_train, X_test, y_train_hot, y_test_hot = reshape_data(input_shape,X_train, X_test, y_train, y_test)
-
-model = Model(input_shape, 'model3_13x100')
+print(y_train_hot[33])
+print(np.max(y_train))
+model = Model(input_shape, os.path.join('models', 'small', 'model3_13x100'))
 model.model.compile(loss=keras.losses.categorical_crossentropy,
                       optimizer=keras.optimizers.Adadelta(),
                       metrics=['accuracy'])
@@ -31,14 +31,16 @@ model.model.compile(loss=keras.losses.categorical_crossentropy,
 #model.model.fit(X_train, y_train_hot, batch_size=batch_size, epochs=epochs, verbose=verbose, validation_data=(X_test, y_test_hot), callbacks=[cb_m])
 #model.model.save('model3_13x100.h5')
 # model.model.load_weights('../drive/My Drive/weights4_e70_bs64_c30.h5')
-print(model.model.evaluate(X_test, y_test_hot))
+print(model.model.summary())
+
+#print(model.model.evaluate(X_test, y_test_hot))
 print(model.model.metrics_names)
 #print(model.model.evaluate(X_test, y_test_hot))
 #print(model.model.metrics_names)
 #np.random.seed(42)
 #path = paths.pick_random_sample(path=paths.get_small_path())
 #print(path)
-
+'''
 path = r'.\small_data\stop\f92e49f3_nohash_2.wav'
 y = utils.wav(path)
 n = len(y)
@@ -62,8 +64,11 @@ utils.visualize_stf(librosa.stft(y))
 y_out = librosa.util.fix_length(librosa.istft(ft, hop_length=hop_length), n)
 new = librosa.istft(ft)
 #print(scipy.spatial.distance.euclidean(y, y_out))
-utils.save_array_to_wav('test_out', 'padded_tft.wav', y, 16000)
 
+utils.save_array_to_wav('test_out', 'padded_tft.wav', y, 16000)
+pathtocheck =
+for p in pathtocheck:
+    paths.rename_fails(p)
 
 files = os.listdir('test_out')
 for file in files:
@@ -103,13 +108,10 @@ utils.compare_wavs(utils.wav(os.path.join(dir, og)),
     utils.compare_mfccs(utils.wav(os.path.join(dir, og)),
                        utils.wav(os.path.join(dir, file)), range=[-1.3, 1.3], input_shape=(13, 100))
 
-
-
-
-eps = [0.0125, 0.015]
+eps = [0.01, 0.0125, 0.015]
 for ep in eps:
     print('starting ep {}.'.format(ep))
-    for random in range(20):
+    for random in range(3):
         path = paths.pick_random_sample(path=paths.get_small_path())
         sim = simba.SimBA(model=model, path=path, eps=ep)
         for label in range(0, 10):
@@ -117,18 +119,22 @@ for ep in eps:
                 sim.attack()
             sim.targeted_attack(label)
     print('ep {} done.'.format(ep))
-'''
+
+
 input_shape = (13, 100, 1)
 model_file = 'model3_13x100'
 model_path = os.path.join('models', 'small', model_file)
 model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
 
-for target in range(0,2):
+
+
+for pa in range(5):
     path = paths.pick_random_sample(path=paths.get_small_path())
     gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
-                                            epochs=1000, nb_parents=12,
-                                            popsize=50)
-
-    for _ in range(5):
-        gensearch.targeted_search(np.random.randint(0, 9))
-#    gensearch.search()
+                                            epochs=3000, popsize=50,
+                                            nb_parents=12)
+    for target in range(9):
+        if target==0:
+          gensearch.search()
+        gensearch.targeted_search(target)
+'''

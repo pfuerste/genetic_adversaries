@@ -183,11 +183,14 @@ class GeneticSearch:
 
     # Maximizes the confidence in a chosen label
     def targeted_search(self, target_label):
+        if target_label == self.ini_index:
+            print('Skipping target == initial label.')
+            self.reset_instance()
+            return None
         self.population, old_scores = self.fit_sort(target_label)
         for epoch in range(self.epochs):
             if epoch%100==0:
                 print('Best Score: ', old_scores[0])
-
             #print('Mutation Rate: ', self.mutation_rate)
             #if epoch < 50:
             offspring = self.strongest_mate(self.population)
@@ -208,7 +211,7 @@ class GeneticSearch:
                 print('Aborting.')
                 self.reset_instance()
                 return None
-        self.save_attack(target_label, winner_label)
+        self.save_attack(target_label, 'FAIL_'+winner_label)
         self.reset_instance()
         print('Failed to produce adversarial example with the given parameters.')
 
