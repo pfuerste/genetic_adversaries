@@ -1,0 +1,122 @@
+#!/bin/bash
+#$ -N log_Tensor
+#$ -l mem=3G
+#$ -pe default 2
+
+
+wget -q https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b -p "$HOME/miniconda"
+rm Miniconda3-latest-Linux-x86_64.sh
+
+export PATH="$HOME/miniconda/bin:$PATH"
+
+conda create -y -q --name tensorflow python=3
+
+source activate tensorflow
+conda install -y -q absl-py==0.7.1
+conda install -y -qasn1crypto==0.24.0
+conda install -y -qastor==0.8.0
+conda install -y -qattrdict==2.0.1
+conda install -y -qattrs==19.1.0
+conda install -y -qaudioread==2.1.8
+conda install -y -qbackcall==0.1.0
+conda install -y -q bcrypt==3.1.7
+conda install -y -q beautifulsoup4==4.8.0
+conda install -y -q bleach==3.1.0
+conda install -y -q bs4==0.0.1
+conda install -y -q certifi==2019.6.16
+conda install -y -q cffi==1.12.3
+conda install -y -q chardet==3.0.4
+conda install -y -q colorama==0.4.1
+conda install -y -q cryptography==2.7
+conda install -y -q cycler==0.10.0
+conda install -y -q decorator==4.4.0
+conda install -y -q defusedxml==0.6.0
+conda install -y -q entrypoints==0.3
+conda install -y -q gast==0.2.2
+conda install -y -q google-pasta==0.1.7
+conda install -y -q grpcio==1.22.0
+conda install -y -q h5py==2.9.0
+conda install -y -q idna==2.8
+conda install -y -q ipykernel==5.1.1
+conda install -y -q ipython==7.6.1
+conda install -y -q ipython-genutils==0.2.0
+conda install -y -q ipywidgets==7.5.0
+conda install -y -q jedi==0.14.1
+conda install -y -q Jinja2==2.10.1
+conda install -y -q joblib==0.13.2
+conda install -y -q jsonschema==3.0.1
+conda install -y -q jupyter==1.0.0
+conda install -y -q jupyter-client==5.3.1
+conda install -y -q jupyter-console==6.0.0
+conda install -y -q jupyter-core==4.5.0
+conda install -y -q Keras==2.2.4
+conda install -y -q Keras-Applications==1.0.8
+conda install -y -q Keras-Preprocessing==1.1.0
+conda install -y -q kiwisolver==1.1.0
+conda install -y -q librosa==0.7.0
+conda install -y -q llvmlite==0.29.0
+conda install -y -q Markdown==3.1.1
+conda install -y -q MarkupSafe==1.1.1
+conda install -y -q matplotlib==3.1.1
+conda install -y -q mistune==0.8.4
+conda install -y -q nbconvert==5.5.0
+conda install -y -q nbformat==4.4.0
+conda install -y -q notebook==6.0.0
+conda install -y -q numba==0.44.1
+conda install -y -q numpy==1.15.4
+conda install -y -q pandas==0.25.0
+conda install -y -q pandocfilters==1.4.2
+conda install -y -q paramiko==2.6.0
+conda install -y -q parso==0.5.1
+conda install -y -q pickleshare==0.7.5
+conda install -y -q progressbar2==3.42.0
+conda install -y -q prometheus-client==0.7.1
+conda install -y -q prompt-toolkit==2.0.9
+conda install -y -q protobuf==3.9.0
+conda install -y -q pycparser==2.19
+conda install -y -q Pygments==2.4.2
+conda install -y -q PyNaCl==1.3.0
+conda install -y -q pyparsing==2.4.0
+conda install -y -q pyrsistent==0.15.3
+conda install -y -q python-dateutil==2.8.0
+conda install -y -q python-speech-features==0.6
+conda install -y -q python-utils==2.3.0
+conda install -y -q pytz==2019.1
+conda install -y -q pywinpty==0.5.5
+conda install -y -q pyxdg==0.26
+conda install -y -q PyYAML==5.1.1
+conda install -y -q pyzmq==18.0.2
+conda install -y -q qtconsole==4.5.1
+conda install -y -q requests==2.22.0
+conda install -y -q resampy==0.2.1
+conda install -y -q scikit-learn==0.21.2
+conda install -y -q scipy==1.3.0
+conda install -y -q Send2Trash==1.5.0
+conda install -y -q six==1.12.0
+conda install -y -q sklearn==0.0
+conda install -y -q SoundFile==0.10.2
+conda install -y -q soupsieve==1.9.2
+conda install -y -q sox==1.3.7
+conda install -y -q tensorboard==1.10.0
+conda install -y -q tensorflow==1.14.0
+conda install -y -q tensorflow-estimator==1.14.0
+conda install -y -q tensorflow-gpu==1.10.0
+conda install -y -q termcolor==1.1.0
+conda install -y -q terminado==0.8.2
+conda install -y -q testpath==0.4.2
+conda install -y -q tornado==6.0.3
+conda install -y -q tqdm==4.32.2
+conda install -y -q traitlets==4.3.2
+conda install -y -q urllib3==1.25.3
+conda install -y -q wcwidth==0.1.7
+conda install -y -q webencodings==0.5.1
+conda install -y -q Werkzeug==0.15.4
+conda install -y -q widgetsnbextension==3.5.0
+conda install -y -q wrapt==1.11.2
+
+conda list
+source deactivate tensorflow
+
+cd $HOME/miniconda/pkgs
+rm *.tar.bz2 -f 2> /dev/null

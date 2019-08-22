@@ -1,0 +1,118 @@
+#!/bin/bash
+#$ -N mk_pyenv
+#$ -l mem=3G
+
+
+
+#check version of virttual env
+virtualenv --version
+
+virtualenv python3_tf_gpu
+
+source python3_tf_gpu/bin/activate
+
+pip3 install absl\-py==0.7.1
+pip3 install asn1crypto==0.24.0
+pip3 install astor==0.8.0
+pip3 install attrdict==2.0.1
+pip3 install attrs==19.1.0
+pip3 install audioread==2.1.8
+pip3 install backcall==0.1.0
+pip3 install bcrypt==3.1.7
+pip3 install beautifulsoup4==4.8.0
+pip3 install bleach==3.1.0
+pip3 install bs4==0.0.1
+pip3 install certifi==2019.6.16
+pip3 install cffi==1.12.3
+pip3 install chardet==3.0.4
+pip3 install colorama==0.4.1
+pip3 install cryptography==2.7
+pip3 install cycler==0.10.0
+pip3 install decorator==4.4.0
+pip3 install defusedxml==0.6.0
+pip3 install entrypoints==0.3
+pip3 install gast==0.2.2
+pip3 install google\-pasta==0.1.7
+pip3 install grpcio==1.22.0
+pip3 install h5py==2.9.0
+pip3 install idna==2.8
+pip3 install ipykernel==5.1.1
+pip3 install ipython==7.6.1
+pip3 install ipython\-genutils==0.2.0
+pip3 install ipywidgets==7.5.0
+pip3 install jedi==0.14.1
+pip3 install Jinja2==2.10.1
+pip3 install joblib==0.13.2
+pip3 install jsonschema==3.0.1
+pip3 install jupyter==1.0.0
+pip3 install jupyter\-client==5.3.1
+pip3 install jupyter\-console==6.0.0
+pip3 install jupyter\-core==4.5.0
+pip3 install Keras==2.2.4
+pip3 install Keras\-Applications==1.0.8
+pip3 install Keras\-Preprocessing==1.1.0
+pip3 install kiwisolver==1.1.0
+pip3 install librosa==0.7.0
+pip3 install llvmlite==0.29.0
+pip3 install Markdown==3.1.1
+pip3 install MarkupSafe==1.1.1
+pip3 install matplotlib==3.1.1
+pip3 install mistune==0.8.4
+pip3 install nbconvert==5.5.0
+pip3 install nbformat==4.4.0
+pip3 install notebook==6.0.0
+pip3 install numba==0.44.1
+pip3 install numpy==1.15.4
+pip3 install pandas==0.25.0
+pip3 install pandocfilters==1.4.2
+pip3 install paramiko==2.6.0
+pip3 install parso==0.5.1
+pip3 install pickleshare==0.7.5
+pip3 install progressbar2==3.42.0
+pip3 install prometheus\-client==0.7.1
+pip3 install prompt\-toolkit==2.0.9
+pip3 install protobuf==3.9.0
+pip3 install pycparser==2.19
+pip3 install Pygments==2.4.2
+pip3 install PyNaCl==1.3.0
+pip3 install pyparsing==2.4.0
+pip3 install pyrsistent==0.15.3
+pip3 install python\-dateutil==2.8.0
+pip3 install python\-speech-features==0.6
+pip3 install python\-utils==2.3.0
+pip3 install pytz==2019.1
+pip3 install pywinpty==0.5.5
+pip3 install pyxdg==0.26
+pip3 install PyYAML==5.1.1
+pip3 install pyzmq==18.0.2
+pip3 install qtconsole==4.5.1
+pip3 install requests==2.22.0
+pip3 install resampy==0.2.1
+pip3 install scikit\-learn==0.21.2
+pip3 install scipy==1.3.0
+pip3 install Send2Trash==1.5.0
+pip3 install six==1.12.0
+pip3 install sklearn==0.0
+pip3 install SoundFile==0.10.2
+pip3 install soupsieve==1.9.2
+pip3 install sox==1.3.7
+pip3 install tensorboard==1.10.0
+pip3 install tensorflow==1.14.0
+pip3 install tensorflow\-estimator==1.14.0
+pip3 install tensorflow\-gpu==1.10.0
+pip3 install termcolor==1.1.0
+pip3 install terminado==0.8.2
+pip3 install testpath==0.4.2
+pip3 install tornado==6.0.3
+pip3 install tqdm==4.32.2
+pip3 install traitlets==4.3.2
+pip3 install urllib3==1.25.3
+pip3 install wcwidth==0.1.7
+pip3 install webencodings==0.5.1
+pip3 install Werkzeug==0.15.4
+pip3 install widgetsnbextension==3.5.0
+pip3 install wrapt==1.11.2
+
+pip3 list
+
+deactivate

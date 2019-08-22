@@ -5,11 +5,20 @@ import numpy as np
 from keras.utils import to_categorical
 
 
-def get_out_dir(rate, mode):
+def get_out_dir(rate, mode, replace=False, filter=True, softmax_parenting=False):
+    if mode == 'SimBA':
+        string = 'no_replace' if not replace else 'replace'
+        sf_string = ''
+    elif mode == 'gen':
+        string = 'no_filter' if not filter else 'filter'
+        sf_string = 'no_sfp' if not softmax_parenting else 'sfp'
     if os.path.isdir(os.path.join('..', 'genetic_adversaries')) and not os.name == 'nt':
-        path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'test_out', mode, str(rate))
+        path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'test_out', mode, string, sf_string,str(rate))
+    elif 'Downloads' in os.listdir('.'):
+        path = os.path.join('/net/projects/scratch/winter/valid_until_31_July_2020/pfuerste', 'test_out',
+                            mode, string, sf_string, str(rate))
     else:
-        path = os.path.join('test_out', mode, str(rate))
+        path = os.path.join('test_out', mode, string, sf_string, str(rate))
     return path
 
 
@@ -27,7 +36,10 @@ def get_small_path():
         path = os.path.join('..', '..', 'content', 'drive', 'My Drive', 'small_data')
         return path
     else:
-        path = os.path.join('.', 'small_data')
+        if 'Downloads' in os.listdir('.'):
+            path = '/net/projects/scratch/winter/valid_until_31_July_2020/pfuerste/small_data'
+        else:
+            path = os.path.join('.', 'small_data')
         return path
 
 
@@ -42,7 +54,6 @@ def get_dummy_path():
 
 # Input: Folder Path
 def get_labels(path=get_data_path()):
-
     labels = [name for name in os.listdir(path) if os.path.isdir(os.path.join(path, name))]
 
     non_labels = ['mfcc_vectors_40x98', 'mfcc_vectors_98x40', 'mfcc_vectors', 'mfcc_vectors_big',

@@ -113,12 +113,24 @@ utils.compare_wavs(utils.wav(os.path.join(dir, og)),
     utils.compare_stft(utils.wav(os.path.join(dir, og)),
                        utils.wav(os.path.join(dir, file)), range=[-1.3, 1.3])
     utils.compare_mfccs(utils.wav(os.path.join(dir, og)),
-                       utils.wav(os.path.join(dir, file)), range=[-1.3, 1.3], input_shape=(13, 100))
 
-eps = [0.01, 0.0125, 0.015]
+input_shape = (13, 100, 1)
+model_file = 'model3_13x100'
+model_path = os.path.join('models', 'small', model_file)
+model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
+
+
+
+
+input_shape = (13, 100, 1)
+model_file = 'model3_13x100'
+model_path = os.path.join('models', 'small', model_file)
+model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
+
+eps = [0.0123]
 for ep in eps:
     print('starting ep {}.'.format(ep))
-    for random in range(3):
+    for random in range(25):
         path = paths.pick_random_sample(path=paths.get_small_path())
         sim = simba.SimBA(model=model, path=path, eps=ep)
         for label in range(0, 10):
@@ -127,21 +139,19 @@ for ep in eps:
             sim.targeted_attack(label)
     print('ep {} done.'.format(ep))
 
+
+
 '''
+
 input_shape = (13, 100, 1)
 model_file = 'model3_13x100'
 model_path = os.path.join('models', 'small', model_file)
 model = Model(input_shape=input_shape, version=model_path, path=paths.get_small_path())
-
-
-
+#print(model.predict_array((utils.wav(os.path.join('test_out', 'SimBA', '0.025', '0id_2target_up_label_35q_0.2537640631198883ip.wav')))))
 for pa in range(5):
     path = paths.pick_random_sample(path=paths.get_small_path())
     gensearch = geneticsearch.GeneticSearch(model=model, filepath=path,
                                             epochs=3000, popsize=50,
                                             nb_parents=12)
-    for target in range(9):
-        if target==0:
-          gensearch.search()
+    for target in range(10):
         gensearch.targeted_search(target)
-

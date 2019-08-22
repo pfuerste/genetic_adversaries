@@ -2,6 +2,7 @@ import paths, utils
 import librosa
 import numpy as np
 import os
+from paths import get_labels, get_small_path
 
 
 class SimBA:
@@ -29,9 +30,10 @@ class SimBA:
         self.wav = self.ini_wav
 
     def print_log(self):
-        ini_class = self.model.predict_array(self.ini_wav)[0]
+        ini_class = self.ini_class
         new_class = self.model.predict_array(self.wav)[0]
         if ini_class == new_class:
+            print(ini_class, new_class)
             print('Attack was not successfull.')
         else:
             print('Changed prediction from {} to {}'.format(ini_class, new_class))
@@ -49,6 +51,7 @@ class SimBA:
             return 0
 
     def get_saveid(self, target, label):
+        print(' target ', target, ' label ', label)
         if self.targeted or target == 'Original':
             return '{}id_{}target_{}_label_{}q_{}ip.wav'.format(self.runid, target, label, self.queries, self.ini_prob)
         else:
@@ -57,13 +60,15 @@ class SimBA:
     def save_attack(self, target, label, deltas):
         if not os.path.isdir(self.out_dir):
             os.mkdir(self.out_dir)
-        utils.save_array_to_wav(self.out_dir, self.get_saveid(target, label), self.wav, self.sr)
+        if not os.path.isdir(os.path.join(self.out_dir, str(self.runid))):
+            os.mkdir(os.path.join(self.out_dir, str(self.runid)))
+        utils.save_array_to_wav(os.path.join(self.out_dir, str(self.runid)), self.get_saveid(target, label), self.wav, self.sr)
         if not self.init:
             print('saving probs')
             self.save_probs(target, label, deltas)
 
     def save_probs(self, target, label, deltas):
-        np.save(os.path.join(self.out_dir, '{}_deltas.npy'.format(self.get_saveid(target, label)[:-4])), deltas)
+        np.save(os.path.join(self.out_dir, str(self.runid), '{}_deltas.npy'.format(self.get_saveid(target, label)[:-4])), deltas)
 
     def get_probs(self, wav):
         return self.model.get_confidence_scores(wav)
@@ -111,6 +116,8 @@ class SimBA:
         self.reset_instance()
 
     def targeted_attack(self, target_label):
+        labels = get_labels(get_small_path())
+        print('initial label check: {} = {}'.format(target_label, labels[0][target_label]))
         if target_label == self.ini_index:
             return None
         deltas = np.empty([16000, 2])
@@ -118,10 +125,13 @@ class SimBA:
         self.targeted = True
         probs = self.get_probs(self.wav)
         for epoch in range(self.budget):
-            #if epoch % 1000 == 0:
-            #    print('Epoch {}, initial class probability: {}, target class probability: {}'
-            #          .format(epoch, probs[self.ini_index], probs[target_label]))
-            if np.float(probs[self.ini_index]) < np.float(probs[target_label]):
+            if epoch % 100 == 0:
+                print('Epoch {}, initial class {} probability: {}, target class {} probability: {}'
+                      .format(epoch, self.ini_class, probs[self.ini_index], labels[0][target_label], probs[target_label]))
+            if np.float(probs[target_label]) == np.max(probs):
+                print('Epoch {}, initial class {} probability: {}, target class {} probability: {}'
+                      .format(epoch, self.ini_class, probs[self.ini_index], labels[0][target_label],
+                              probs[target_label]))
                 self.save_attack(target_label, self.model.predict_array(self.wav)[0], deltas)
                 self.print_log()
                 self.reset_instance()

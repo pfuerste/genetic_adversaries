@@ -1,3 +1,4 @@
+import os
 import keras
 import numpy as np
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
@@ -19,6 +20,8 @@ class Model:
         if type(version) is str:
             try:
                 model = load_model(version)
+            except OSError:
+                model = load_model(os.path.join('/net/projects/scratch/winter/valid_until_31_July_2020/pfuerste', version))
             except FileNotFoundError:
                 'The chosen model does not exist yet.'
 
